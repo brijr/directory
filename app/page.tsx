@@ -1,6 +1,5 @@
 // Next Imports
 import Link from "next/link";
-import Image from "next/image";
 
 // Database Imports
 import { getAllBookmarks } from "@/lib/data";
