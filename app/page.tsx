@@ -2,15 +2,14 @@
 import Link from "next/link";
 
 // Database Imports
-import { db } from "@/db/client";
-import { bookmarks } from "@/db/schema";
+import { getAllBookmarks } from "@/lib/data";
+import { Bookmark } from "@/lib/data";
 
 // Component Imports
 import { Main, Section, Container } from "@/components/craft";
 
 export default async function Home() {
-  const data = await db.select().from(bookmarks).all();
-  console.log(data);
+  const data = await getAllBookmarks();
 
   return (
     <Main>
@@ -29,11 +28,7 @@ export default async function Home() {
   );
 }
 
-const BookmarkCard = ({
-  bookmark,
-}: {
-  bookmark: typeof bookmarks.$inferSelect;
-}) => {
+const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
     <Link href={bookmark.slug ?? "/"} className="hover:underline">
       {bookmark.title}

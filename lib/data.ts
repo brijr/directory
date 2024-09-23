@@ -2,18 +2,16 @@ import { db } from "@/db/client";
 import { bookmarks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export const GetAllBookmarks = async () => {
-  const data = await db.select().from(bookmarks).all();
+export type Bookmark = typeof bookmarks.$inferSelect;
 
-  return data;
-};
+export async function getAllBookmarks(): Promise<Bookmark[]> {
+  return await db.select().from(bookmarks).all();
+}
 
-export const GetBookmarkBySlug = async (slug: string) => {
-  const data = await db
+export async function getBookmarkBySlug(slug: string): Promise<Bookmark[]> {
+  return await db
     .select()
     .from(bookmarks)
     .where(eq(bookmarks.slug, slug))
     .all();
-
-  return data;
-};
+}
