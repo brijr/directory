@@ -29,8 +29,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
     <Main>
       <Section>
         <Container>
-          <h1>{bookmark.title}</h1>
-          <p>{bookmark.description}</p>
+          <div className="mb-12">
+            <h1>{bookmark.title}</h1>
+            <p>{bookmark.description}</p>
+          </div>
+
           <Article>
             <ReactMarkdown>{bookmark.summary}</ReactMarkdown>
           </Article>
