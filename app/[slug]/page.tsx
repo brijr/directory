@@ -1,5 +1,6 @@
 // Next Imports
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 // Database Imports
 import { db } from "@/db/client";
@@ -8,6 +9,7 @@ import { eq } from "drizzle-orm";
 
 // Component Imports
 import { Main, Section, Container, Article } from "@/components/craft";
+import { Button } from "@/components/ui/button";
 
 // Markdown Rendering
 import ReactMarkdown from "react-markdown";
@@ -32,6 +34,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
           <div className="mb-12">
             <h1>{bookmark.title}</h1>
             <p>{bookmark.description}</p>
+            <Button className="not-prose mt-4">
+              <Link
+                href={`${bookmark.url}?utm_source=designengineer.fyi`}
+                target="_blank"
+              >
+                View More
+              </Link>
+            </Button>
           </div>
 
           <Article>
