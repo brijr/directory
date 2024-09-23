@@ -32,7 +32,7 @@ export default async function Home() {
 const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
     <Link href={bookmark.slug ?? "/"} className="hover:underline">
-      <img
+      <Image
         src={bookmark.ogImage ?? bookmark.screenshotUrl ?? ""}
         alt={bookmark.title ?? ""}
         width={320}
