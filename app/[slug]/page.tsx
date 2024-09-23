@@ -3,9 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 // Database Imports
-import { db } from "@/db/client";
-import { bookmarks } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { GetBookmarkBySlug } from "@/lib/data";
 
 // Component Imports
 import { Main, Section, Container, Article } from "@/components/craft";
@@ -15,11 +13,7 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const data = await db
-    .select()
-    .from(bookmarks)
-    .where(eq(bookmarks.slug, params.slug))
-    .all();
+  const data = await GetBookmarkBySlug(params.slug);
 
   if (data.length === 0) {
     notFound();
