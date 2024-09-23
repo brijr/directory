@@ -34,14 +34,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
           <div className="mb-12">
             <h1>{bookmark.title}</h1>
             <p>{bookmark.description}</p>
-            <Button className="not-prose mt-4">
-              <Link
-                href={`${bookmark.url}?utm_source=designengineer.fyi`}
-                target="_blank"
-              >
-                View More
-              </Link>
-            </Button>
+            <div className="flex gap-2 my-4">
+              <Button className="not-prose">
+                <Link
+                  href={`${bookmark.url}?utm_source=designengineer.fyi`}
+                  target="_blank"
+                >
+                  View More
+                </Link>
+              </Button>
+              <Button variant="outline" className="not-prose">
+                <Link href="/">Go Home</Link>
+              </Button>
+            </div>
           </div>
 
           <Article>
