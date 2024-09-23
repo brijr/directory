@@ -1,5 +1,6 @@
 // Next Imports
 import Link from "next/link";
+import Image from "next/image";
 
 // Database Imports
 import { getAllBookmarks } from "@/lib/data";
@@ -31,6 +32,12 @@ export default async function Home() {
 const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
     <Link href={bookmark.slug ?? "/"} className="hover:underline">
+      <img
+        src={bookmark.ogImage ?? bookmark.screenshotUrl ?? ""}
+        alt={bookmark.title ?? ""}
+        width={320}
+        height={240}
+      />
       {bookmark.title}
     </Link>
   );
