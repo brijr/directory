@@ -9,9 +9,9 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
     <Link
       href={bookmark.slug ?? "/"}
       className={cn(
-        "group not-prose flex flex-col h-full gap-4",
-        "border p-4 bg-accent/50",
-        "hover:bg-accent/70 transition-all"
+        "not-prose group flex h-full flex-col gap-4",
+        "border bg-accent/50 p-4",
+        "transition-all hover:bg-accent/70",
       )}
     >
       <Image
@@ -22,9 +22,9 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
       />
       <h3
         className={cn(
-          "group-hover:underline underline-offset-4",
+          "underline-offset-4 group-hover:underline",
           "decoration-foreground/50 decoration-dotted",
-          "text-lg leading-snug"
+          "text-lg leading-snug",
         )}
       >
         {bookmark.title}
