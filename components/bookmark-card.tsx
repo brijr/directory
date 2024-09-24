@@ -29,6 +29,10 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
       >
         {bookmark.title}
       </h3>
+      <p></p>
+      <p className="truncate text-sm text-muted-foreground">
+        {bookmark.description}
+      </p>
     </Link>
   );
 };
