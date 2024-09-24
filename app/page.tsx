@@ -1,13 +1,13 @@
-// Next Imports
-import Link from "next/link";
-import Image from "next/image";
+// React /Next Imports
+import React from "react";
 
 // Database Imports
 import { getAllBookmarks } from "@/lib/data";
-import { Bookmark } from "@/lib/data";
 
 // Component Imports
 import { Main, Section, Container } from "@/components/craft";
+import { BookmarkCard } from "@/components/bookmark-card";
+import { BookmarkGrid } from "@/components/bookmark-grid";
 
 export default async function Home() {
   const data = await getAllBookmarks();
@@ -27,25 +27,3 @@ export default async function Home() {
     </Main>
   );
 }
-
-const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
-  return (
-    <Link href={bookmark.slug ?? "/"} className="hover:underline">
-      <Image
-        src={bookmark.screenshotUrl ?? ""}
-        width={300}
-        height={300}
-        alt={bookmark.title ?? ""}
-      />
-      {bookmark.title}
-    </Link>
-  );
-};
-
-const BookmarkGrid = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {children}
-    </div>
-  );
-};
