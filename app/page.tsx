@@ -1,5 +1,6 @@
 // Next Imports
 import Link from "next/link";
+import Image from "next/image";
 
 // Database Imports
 import { getAllBookmarks } from "@/lib/data";
@@ -16,7 +17,6 @@ export default async function Home() {
       <Section>
         <Container>
           <h1>Welcome to the Directory Template</h1>
-
           <BookmarkGrid>
             {data.map((bookmark) => (
               <BookmarkCard key={bookmark.slug} bookmark={bookmark} />
@@ -31,8 +31,10 @@ export default async function Home() {
 const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
   return (
     <Link href={bookmark.slug ?? "/"} className="hover:underline">
-      <img
-        src={bookmark.ogImage ?? bookmark.screenshotUrl ?? ""}
+      <Image
+        src={bookmark.screenshotUrl ?? ""}
+        width={300}
+        height={300}
         alt={bookmark.title ?? ""}
       />
       {bookmark.title}

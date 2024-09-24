@@ -5,9 +5,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "assets.example.com",
+        hostname: "libro-images.s3.amazonaws.com",
         port: "",
-        pathname: "/account123/**",
+        pathname: "/**",
       },
     ],
   },
