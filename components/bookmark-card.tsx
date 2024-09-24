@@ -20,7 +20,13 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
         height={300}
         alt={bookmark.title ?? ""}
       />
-      <h3 className="group-hover:underline underline-offset-4 decoration-foreground/50 decoration-dotted text-lg leading-snug">
+      <h3
+        className={cn(
+          "group-hover:underline underline-offset-4",
+          "decoration-foreground/50 decoration-dotted",
+          "text-lg leading-snug"
+        )}
+      >
         {bookmark.title}
       </h3>
     </Link>
