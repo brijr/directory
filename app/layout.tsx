@@ -60,7 +60,7 @@ const Header = () => {
             className="dark:invert"
             alt="Design Engineer Logo"
             width={48}
-            height={48}
+            height={41.06}
           />
         </Link>
         <h1 className="text-sm text-muted-foreground">designengineer.fyi</h1>

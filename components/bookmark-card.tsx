@@ -10,7 +10,7 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
       href={bookmark.slug ?? "/"}
       className={cn(
         "not-prose group grid gap-2",
-        "border bg-accent/50 p-1",
+        "border bg-accent/50 p-1.5",
         "transition-all hover:bg-accent",
       )}
     >
@@ -21,7 +21,7 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
         alt={bookmark.name ?? "Design Engineer Resource"}
         className="border"
       />
-      <div className="flex flex-col gap-3 px-1.5 pb-1.5 pt-1">
+      <div className="flex flex-col gap-3 px-1 pb-1 pt-1">
         <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
           <h3
             className={cn(
