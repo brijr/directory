@@ -1,7 +1,8 @@
 // Next Imports
 import { notFound } from "next/navigation";
 import Link from "next/link";
-// import Image from "next/image";
+import Image from "next/image";
+
 // Database Imports
 import { getBookmarkBySlug } from "@/lib/data";
 
@@ -22,19 +23,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const bookmark = data[0];
 
   return (
-    <Main>
+    <main>
       <Section>
         <Container>
           <div className="mb-12">
             <h1>{bookmark.name}</h1>
             <p>{bookmark.description}</p>
-            {/* <Image
-              src={bookmark.screenshotUrl ?? ""}
+            <Image
+              src={bookmark.screenshot_url ?? "/placeholder.jpg"}
               width={1920}
               height={1080}
-              alt={bookmark.name ?? ""}
+              alt={bookmark.name ?? "Design Engineer Resource"}
               className="rounded-md"
-            /> */}
+            />
             <div className="my-4 flex gap-2">
               <Button className="not-prose">
                 <Link
@@ -51,15 +52,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
           </div>
 
           <Article>
-            <h3>Use Case</h3>
-            <ReactMarkdown>{bookmark.use_case}</ReactMarkdown>
-            <h3>How to Use</h3>
-            <ReactMarkdown>{bookmark.how_to_use}</ReactMarkdown>
-            <h3>Overview</h3>
+            <SectionHeader>Overview</SectionHeader>
             <ReactMarkdown>{bookmark.overview}</ReactMarkdown>
+            <SectionHeader>Use Case</SectionHeader>
+            <ReactMarkdown>{bookmark.use_case}</ReactMarkdown>
+            <SectionHeader>How to Use</SectionHeader>
+            <ReactMarkdown>{bookmark.how_to_use}</ReactMarkdown>
           </Article>
         </Container>
       </Section>
-    </Main>
+    </main>
   );
 }
+
+const SectionHeader = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="mb-6 border-b pb-1">
+      <h3 className="!text-xl !font-bold">{children}</h3>
+    </div>
+  );
+};

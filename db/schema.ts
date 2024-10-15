@@ -9,4 +9,5 @@ export const bookmarks = sqliteTable("bookmarks", {
   use_case: text("use_case"),
   how_to_use: text("how_to_use"),
   overview: text("overview"),
+  screenshot_url: text("screenshot_url"),
 });

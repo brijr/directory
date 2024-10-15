@@ -9,6 +9,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "libro-images.s3.us-west-2.amazonaws.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

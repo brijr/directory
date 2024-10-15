@@ -1,5 +1,5 @@
 import Link from "next/link";
-// import Image from "next/image";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Bookmark } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -14,12 +14,12 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
         "transition-all hover:bg-accent/70",
       )}
     >
-      {/* <Image
-        src={bookmark.screenshotUrl ?? ""}
+      <Image
+        src={bookmark.screenshot_url ?? "/placeholder.jpg"}
         width={300}
         height={300}
-        alt={bookmark.name ?? ""}
-      /> */}
+        alt={bookmark.name ?? "Design Engineer Resource"}
+      />
       <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
         <h3
           className={cn(

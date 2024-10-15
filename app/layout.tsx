@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Image from "next/image";
+import Logo from "@/public/logo.svg";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Container, Section } from "@/components/craft";
 
@@ -38,6 +41,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Header />
           {children}
           <Footer />
         </ThemeProvider>
@@ -45,6 +49,25 @@ export default function RootLayout({
     </html>
   );
 }
+
+const Header = () => {
+  return (
+    <header>
+      <Container className="flex items-start justify-between gap-3">
+        <Link href="/" className="transition-all hover:opacity-80">
+          <Image
+            src={Logo}
+            className="dark:invert"
+            alt="Design Engineer Logo"
+            width={48}
+            height={48}
+          />
+        </Link>
+        <h1 className="text-sm text-muted-foreground">designengineer.fyi</h1>
+      </Container>
+    </header>
+  );
+};
 
 const Footer = () => {
   return (
