@@ -111,7 +111,7 @@ const Article = ({
       dangerouslySetInnerHTML={dangerouslySetInnerHTML}
       className={cn(
         // General Prose
-        "prose:font-sans prose prose-neutral dark:prose-invert xl:prose-lg",
+        "prose:font-sans prose prose-neutral dark:prose-invert",
         // Prose Headings
         "prose-headings:text-lg prose-headings:font-medium",
         // Prose Paragraphs

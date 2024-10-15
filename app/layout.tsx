@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Container, Section } from "@/components/craft";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,10 +38,37 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ThemeToggle />
           {children}
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
+const Footer = () => {
+  return (
+    <footer>
+      <Container className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Created at{" "}
+          <a
+            className="underline transition-all hover:text-foreground"
+            href="https://wip-design.com"
+          >
+            WIP
+          </a>{" "}
+          by{" "}
+          <a
+            className="underline transition-all hover:text-foreground"
+            href="https://bridger.to"
+          >
+            Bridger
+          </a>
+          .
+        </p>
+        <ThemeToggle />
+      </Container>
+    </footer>
+  );
+};
