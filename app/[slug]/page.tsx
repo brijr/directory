@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Balancer from "react-wrap-balancer";
+
 // Database Imports
 import { getBookmarkBySlug } from "@/lib/data";
 
 // Component Imports
-import { Main, Section, Container, Article } from "@/components/craft";
+import { Section, Container, Article } from "@/components/craft";
 import { Button } from "@/components/ui/button";
 
 // Markdown Rendering
@@ -15,16 +16,13 @@ import ReactMarkdown from "react-markdown";
 import { BackButton } from "@/components/back-button";
 
 // Metadata
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 
 type Props = {
   params: { slug: string };
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata,
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getBookmarkBySlug(params.slug);
 
   if (data.length === 0) {
