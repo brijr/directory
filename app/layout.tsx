@@ -1,13 +1,25 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Image from "next/image";
+import Link from "next/link";
 import Logo from "@/public/logo.svg";
 import "./globals.css";
 
+import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
-import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Container, Section } from "@/components/craft";
+import { Container } from "@/components/craft";
+import { EmailForm } from "@/components/email-form";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Mail } from "lucide-react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -64,9 +76,7 @@ const Header = () => {
             height={41.06}
           />
         </Link>
-        <a href="https://github.com/brijr/directory" target="_blank">
-          <h1 className="text-sm text-muted-foreground">designengineer.fyi</h1>
-        </a>
+        <Subscribe />
       </Container>
     </header>
   );
@@ -96,5 +106,27 @@ const Footer = () => {
         <ThemeToggle />
       </Container>
     </footer>
+  );
+};
+
+const Subscribe = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" className="flex items-center">
+          <Mail className="mr-2 h-3 w-3" /> Subscribe
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Subscribe for more resources</DialogTitle>
+          <DialogDescription>
+            Get notified when new resources are added.
+          </DialogDescription>
+        </DialogHeader>
+        <EmailForm />
+        <div className="h-px" />
+      </DialogContent>
+    </Dialog>
   );
 };
