@@ -20,7 +20,7 @@ export const CategoryFilter = ({ categories }: { categories: string[] }) => {
   };
 
   return (
-    <div className="sticky top-4 z-10 mb-4 flex flex-wrap items-center gap-2 border bg-accent p-2 shadow-sm">
+    <div className="sticky top-4 z-10 mb-4 flex flex-wrap items-center gap-2 border bg-[#fafafa] p-2 shadow-sm dark:bg-[#181818]">
       <p className="sr-only">Filter by category:</p>
       <Button
         variant={currentCategory === null ? "default" : "outline"}
