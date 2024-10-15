@@ -64,7 +64,9 @@ const Header = () => {
             height={41.06}
           />
         </Link>
-        <h1 className="text-sm text-muted-foreground">designengineer.fyi</h1>
+        <a href="https://github.com/brijr/directory" target="_blank">
+          <h1 className="text-sm text-muted-foreground">designengineer.fyi</h1>
+        </a>
       </Container>
     </header>
   );
