@@ -1,20 +1,10 @@
-import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
-
-export const categories = sqliteTable("categories", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").unique().notNull(),
-  slug: text("slug").unique().notNull(),
-});
+import { text, sqliteTable } from "drizzle-orm/sqlite-core";
 
 export const bookmarks = sqliteTable("bookmarks", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  title: text("title"),
+  url: text("url").primaryKey().notNull(),
+  slug: text("slug").unique().notNull(),
+  name: text("name").notNull(),
   description: text("description"),
-  url: text("url").unique().notNull(),
-  ogImage: text("og_image"),
-  summary: text("summary"),
-  screenshotName: text("screenshot_name"),
-  screenshotUrl: text("screenshot_url"),
-  slug: text("slug"),
-  categoryId: integer("category_id").references(() => categories.id),
+  category: text("category"),
+  use_case: text("use_case"),
 });
