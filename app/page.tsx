@@ -16,7 +16,10 @@ export default async function Home() {
     <Main>
       <Section>
         <Container>
-          <h1>Welcome to the Directory Template</h1>
+          <h1 className="sr-only">
+            Resources and Tools for Design Engineers / designengineer.fyi
+          </h1>
+
           <BookmarkGrid>
             {data.map((bookmark) => (
               <BookmarkCard key={bookmark.slug} bookmark={bookmark} />
