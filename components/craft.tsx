@@ -114,8 +114,6 @@ const Article = ({
         "prose:font-sans prose prose-neutral dark:prose-invert",
         // Prose Headings
         "prose-headings:text-lg prose-headings:font-medium",
-        // Prose Paragraphs
-        "prose-p:mb-0",
         // Prose Strong
         "prose-strong:font-semibold",
         // Inline Links
