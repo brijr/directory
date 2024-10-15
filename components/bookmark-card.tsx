@@ -10,8 +10,8 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
       href={bookmark.slug ?? "/"}
       className={cn(
         "not-prose group grid gap-2",
-        "border bg-accent/50 p-3",
-        "transition-all hover:bg-accent/70",
+        "border bg-accent/50 p-1",
+        "transition-all hover:bg-accent",
       )}
     >
       <Image
@@ -19,25 +19,28 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
         width={300}
         height={300}
         alt={bookmark.name ?? "Design Engineer Resource"}
+        className="border"
       />
-      <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
-        <h3
-          className={cn(
-            "underline-offset-4 group-hover:underline",
-            "decoration-foreground/50 decoration-dotted",
-            "text-base leading-snug",
-            "min-w-0 flex-1 overflow-hidden truncate",
-          )}
-        >
-          {bookmark.name}
-        </h3>
-        <Badge variant="outline" className="text-xs">
-          {bookmark.category}
-        </Badge>
+      <div className="flex flex-col gap-3 px-1.5 pb-1.5 pt-1">
+        <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
+          <h3
+            className={cn(
+              "underline-offset-4 group-hover:underline",
+              "decoration-foreground/50 decoration-dotted",
+              "text-base leading-snug",
+              "min-w-0 flex-1 overflow-hidden truncate",
+            )}
+          >
+            {bookmark.name}
+          </h3>
+          <Badge variant="outline" className="bg-background">
+            {bookmark.category}
+          </Badge>
+        </div>
+        <p className="line-clamp-2 max-w-full text-xs text-muted-foreground">
+          {bookmark.description}
+        </p>
       </div>
-      <p className="line-clamp-2 max-w-full text-xs text-muted-foreground">
-        {bookmark.description}
-      </p>
     </Link>
   );
 };
