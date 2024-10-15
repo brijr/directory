@@ -123,7 +123,7 @@ const Article = ({
         // Blockquotes
         "prose-blockquote:not-italic",
         // Pre and Code Blocks
-        "prose-pre:border prose-pre:bg-muted/25",
+        "prose-pre:border prose-pre:bg-muted/25 prose-pre:text-foreground",
         className,
       )}
       id={id}
