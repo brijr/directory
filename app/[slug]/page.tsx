@@ -1,7 +1,7 @@
 // Next Imports
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+// import Image from "next/image";
 // Database Imports
 import { getBookmarkBySlug } from "@/lib/data";
 
@@ -26,15 +26,15 @@ export default async function Page({ params }: { params: { slug: string } }) {
       <Section>
         <Container>
           <div className="mb-12">
-            <h1>{bookmark.title}</h1>
+            <h1>{bookmark.name}</h1>
             <p>{bookmark.description}</p>
-            <Image
+            {/* <Image
               src={bookmark.screenshotUrl ?? ""}
               width={1920}
               height={1080}
-              alt={bookmark.title ?? ""}
+              alt={bookmark.name ?? ""}
               className="rounded-md"
-            />
+            /> */}
             <div className="my-4 flex gap-2">
               <Button className="not-prose">
                 <Link
@@ -51,7 +51,12 @@ export default async function Page({ params }: { params: { slug: string } }) {
           </div>
 
           <Article>
-            <ReactMarkdown>{bookmark.summary}</ReactMarkdown>
+            <h3>Use Case</h3>
+            <ReactMarkdown>{bookmark.use_case}</ReactMarkdown>
+            <h3>How to Use</h3>
+            <ReactMarkdown>{bookmark.how_to_use}</ReactMarkdown>
+            <h3>Overview</h3>
+            <ReactMarkdown>{bookmark.overview}</ReactMarkdown>
           </Article>
         </Container>
       </Section>

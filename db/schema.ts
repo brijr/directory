@@ -7,4 +7,6 @@ export const bookmarks = sqliteTable("bookmarks", {
   description: text("description"),
   category: text("category"),
   use_case: text("use_case"),
+  how_to_use: text("how_to_use"),
+  overview: text("overview"),
 });
