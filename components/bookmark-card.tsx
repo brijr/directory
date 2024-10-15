@@ -16,8 +16,8 @@ export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
     >
       <Image
         src={bookmark.screenshot_url ?? "/placeholder.jpg"}
-        width={300}
-        height={300}
+        width={295.33}
+        height={166.99}
         alt={bookmark.name ?? "Design Engineer Resource"}
         className="border"
       />
