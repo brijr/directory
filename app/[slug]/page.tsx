@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 
 // Markdown Rendering
 import ReactMarkdown from "react-markdown";
+import { BackButton } from "@/components/back-button";
 
 export default async function Page({ params }: { params: { slug: string } }) {
   const data = await getBookmarkBySlug(params.slug);
@@ -42,12 +43,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
                   href={`${bookmark.url}?utm_source=designengineer.fyi`}
                   target="_blank"
                 >
-                  View More
+                  Visit Resource
                 </Link>
               </Button>
-              <Button variant="outline" className="not-prose">
-                <Link href="/">Go Home</Link>
-              </Button>
+              <BackButton />
             </div>
           </div>
 
