@@ -62,10 +62,12 @@ export default async function Page({ params }: { params: { slug: string } }) {
           </div>
 
           <Article>
-            <SectionHeader>Overview</SectionHeader>
-            <ReactMarkdown>{bookmark.overview}</ReactMarkdown>
             <SectionHeader>Use Case</SectionHeader>
             <ReactMarkdown>{bookmark.use_case}</ReactMarkdown>
+
+            <SectionHeader>Overview</SectionHeader>
+            <ReactMarkdown>{bookmark.overview}</ReactMarkdown>
+
             <SectionHeader>How to Use</SectionHeader>
             <ReactMarkdown>{bookmark.how_to_use}</ReactMarkdown>
           </Article>
@@ -78,7 +80,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 const SectionHeader = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="mb-6 border-b pb-1">
-      <h3 className="!text-xl !font-bold">{children}</h3>
+      <h3 className="!text-xl !font-medium">{children}</h3>
     </div>
   );
 };
