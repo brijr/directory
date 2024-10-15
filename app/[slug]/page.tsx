@@ -14,7 +14,37 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { BackButton } from "@/components/back-button";
 
-export default async function Page({ params }: { params: { slug: string } }) {
+// Metadata
+import { Metadata, ResolvingMetadata } from "next";
+
+type Props = {
+  params: { slug: string };
+};
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const data = await getBookmarkBySlug(params.slug);
+
+  if (data.length === 0) {
+    notFound();
+  }
+
+  const bookmark = data[0];
+
+  return {
+    title: `${bookmark.name} | designengineer.fyi`,
+    description: bookmark.description,
+    openGraph: {
+      title: `${bookmark.name} | designengineer.fyi`,
+      description: `${bookmark.description}`,
+      images: [bookmark.screenshot_url ?? "/placeholder.jpg"],
+    },
+  };
+}
+
+export default async function Page({ params }: Props) {
   const data = await getBookmarkBySlug(params.slug);
 
   if (data.length === 0) {
