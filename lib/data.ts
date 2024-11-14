@@ -7,16 +7,13 @@ export type Category = typeof categories.$inferSelect;
 
 export async function getAllBookmarks(): Promise<(Bookmark & { category: Category | null })[]> {
   const results = await db
-    .select({
-      ...bookmarks,
-      category: categories,
-    })
+    .select()
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id));
   
   return results.map(row => ({
-    ...row,
-    category: row.category,
+    ...row.bookmarks,
+    category: row.categories,
   }));
 }
 
@@ -26,10 +23,7 @@ export async function getAllCategories(): Promise<Category[]> {
 
 export async function getBookmarkById(id: number): Promise<(Bookmark & { category: Category | null }) | null> {
   const results = await db
-    .select({
-      ...bookmarks,
-      category: categories,
-    })
+    .select()
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
     .where(eq(bookmarks.id, id))
@@ -40,17 +34,14 @@ export async function getBookmarkById(id: number): Promise<(Bookmark & { categor
   }
 
   return {
-    ...results[0],
-    category: results[0].category,
+    ...results[0].bookmarks,
+    category: results[0].categories,
   };
 }
 
 export async function getBookmarkBySlug(slug: string): Promise<(Bookmark & { category: Category | null }) | null> {
   const results = await db
-    .select({
-      ...bookmarks,
-      category: categories,
-    })
+    .select()
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
     .where(eq(bookmarks.slug, slug))
@@ -61,7 +52,7 @@ export async function getBookmarkBySlug(slug: string): Promise<(Bookmark & { cat
   }
 
   return {
-    ...results[0],
-    category: results[0].category,
+    ...results[0].bookmarks,
+    category: results[0].categories,
   };
 }
