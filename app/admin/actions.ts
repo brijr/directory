@@ -59,6 +59,33 @@ export async function deleteCategory(formData: FormData) {
 }
 
 // Bookmark Actions
+export async function createBookmark(formData: FormData) {
+  const title = formData.get("title") as string;
+  const url = formData.get("url") as string;
+  const description = formData.get("description") as string;
+  const categoryId = formData.get("categoryId") as string;
+  const excerpt = formData.get("excerpt") as string;
+  const favicon = formData.get("favicon") as string;
+  const ogImage = formData.get("ogImage") as string;
+  const isFavorite = formData.get("isFavorite") === "true";
+  const isArchived = formData.get("isArchived") === "true";
+
+  await db.insert(bookmarks).values({
+    title,
+    url,
+    description,
+    categoryId: categoryId || null,
+    excerpt,
+    favicon,
+    ogImage,
+    isFavorite,
+    isArchived,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
 export async function updateBookmark(formData: FormData) {
   const id = Number(formData.get("id"));
   const title = formData.get("title") as string;

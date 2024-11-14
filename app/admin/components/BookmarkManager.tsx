@@ -16,16 +16,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,6 +39,23 @@ import { updateBookmark, deleteBookmark } from '../actions';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const formSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, 'Title is required'),
+  url: z.string().url('Must be a valid URL'),
+  description: z.string().optional(),
+  categoryId: z.string().optional(),
+  excerpt: z.string().optional(),
+  favicon: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  ogImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  isFavorite: z.boolean(),
+  isArchived: z.boolean(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface BookmarkManagerProps {
   bookmarks: (Bookmark & { category: Category | null })[];
@@ -52,7 +66,8 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
   const [selectedBookmark, setSelectedBookmark] = useState<(Bookmark & { category: Category | null }) | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const form = useForm({
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       id: '',
       title: '',
@@ -78,8 +93,8 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
       excerpt: bookmark.excerpt || '',
       favicon: bookmark.favicon || '',
       ogImage: bookmark.ogImage || '',
-      isFavorite: bookmark.isFavorite,
-      isArchived: bookmark.isArchived,
+      isFavorite: bookmark.isFavorite || false,
+      isArchived: bookmark.isArchived || false,
     });
     setIsEditDialogOpen(true);
   };
@@ -99,10 +114,12 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString());
+      }
     });
 
     try {
@@ -158,7 +175,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                 {bookmark.category && (
                   <Badge
                     style={{
-                      backgroundColor: bookmark.category.color,
+                      backgroundColor: bookmark.category.color || '#666',
                       color: 'white',
                     }}
                   >
@@ -269,7 +286,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                     <SelectContent>
                       <SelectItem value="">None</SelectItem>
                       {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
+                        <SelectItem key={category.id} value={category.id.toString()}>
                           {category.icon} {category.name}
                         </SelectItem>
                       ))}
