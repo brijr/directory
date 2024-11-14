@@ -37,7 +37,6 @@ import {
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import Image from "next/image";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
@@ -166,6 +165,7 @@ export function BookmarkManager({
       formData.append("url", bookmark.url);
 
       try {
+        // @ts-ignore
         await deleteBookmark(formData);
         toast.success("Bookmark deleted successfully");
         window.location.reload();
@@ -251,7 +251,7 @@ export function BookmarkManager({
               <TableCell>
                 <div className="flex items-start gap-2">
                   {bookmark.favicon && (
-                    <Image
+                    <img
                       src={bookmark.favicon}
                       alt=""
                       width={16}
