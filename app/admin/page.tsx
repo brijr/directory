@@ -1,50 +1,35 @@
-'use client';
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { getAllCategories } from "@/lib/data";
+import { CategoryManager } from "./components/CategoryManager";
+import { URLScraper } from "./components/URLScraper";
 
-import { ResultDisplay } from "./components/ResultDisplay";
-import AdminHeader from './components/AdminHeader';
-import { scrapeUrl } from './actions';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { useFormState } from "react-dom";
-
-export default function AdminPage() {
-  const [state, formAction] = useFormState(scrapeUrl, null);
+export default async function AdminPage() {
+  const categories = await getAllCategories();
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader />
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>URL Scraper</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form action={formAction} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="url">Enter URL to scrape</Label>
-                  <Input
-                    type="url"
-                    name="url"
-                    id="url"
-                    required
-                    placeholder="https://example.com"
-                  />
-                </div>
-                
-                <Button type="submit" className="w-full">
-                  Scrape URL
-                </Button>
-
-                <ResultDisplay />
-              </form>
-            </CardContent>
+    <div className="container py-8">
+      <h1 className="mb-8 text-4xl font-bold">Admin Dashboard</h1>
+      
+      <Tabs defaultValue="categories">
+        <TabsList>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="scraper">URL Scraper</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="categories">
+          <Card className="p-6">
+            <CategoryManager categories={categories} />
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="scraper">
+          <Card className="p-6">
+            <URLScraper />
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-

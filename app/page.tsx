@@ -3,7 +3,7 @@ import React from "react";
 import { Suspense } from "react";
 
 // Database Imports
-import { getAllBookmarks } from "@/lib/data";
+import { getAllBookmarks, getAllCategories } from "@/lib/data";
 
 // Component Imports
 import { Main, Section, Container } from "@/components/craft";
@@ -18,24 +18,24 @@ export default async function Home({
 }: {
   searchParams: { category?: string; search?: string };
 }) {
-  const bookmarks = await getAllBookmarks();
-  const categories = Array.from(
-    new Set(bookmarks.map((bookmark) => bookmark.category)),
-  ).filter((category): category is string => category !== null);
+  const [bookmarks, categories] = await Promise.all([
+    getAllBookmarks(),
+    getAllCategories(),
+  ]);
 
   const filteredBookmarks = bookmarks
     .filter((bookmark) => 
-      !searchParams.category || bookmark.category === searchParams.category
+      !searchParams.category || bookmark.category?.id.toString() === searchParams.category
     )
     .filter((bookmark) => {
       if (!searchParams.search) return true;
       const searchTerm = searchParams.search.toLowerCase();
       return (
-        bookmark.name.toLowerCase().includes(searchTerm) ||
+        bookmark.title.toLowerCase().includes(searchTerm) ||
         bookmark.description?.toLowerCase().includes(searchTerm) ||
-        bookmark.category?.toLowerCase().includes(searchTerm) ||
-        bookmark.use_case?.toLowerCase().includes(searchTerm) ||
-        bookmark.overview?.toLowerCase().includes(searchTerm)
+        bookmark.category?.name.toLowerCase().includes(searchTerm) ||
+        bookmark.notes?.toLowerCase().includes(searchTerm) ||
+        bookmark.excerpt?.toLowerCase().includes(searchTerm)
       );
     });
 
@@ -52,12 +52,38 @@ export default async function Home({
             <SearchResultsCounter totalResults={filteredBookmarks.length} />
 
             <Suspense fallback={<div>Loading categories...</div>}>
-              <CategoryFilter categories={categories} />
+              <CategoryFilter 
+                categories={categories.map(cat => ({
+                  id: cat.id.toString(),
+                  name: cat.name,
+                  color: cat.color || undefined,
+                  icon: cat.icon || undefined
+                }))} 
+              />
             </Suspense>
 
             <BookmarkGrid>
               {filteredBookmarks.map((bookmark) => (
-                <BookmarkCard key={bookmark.slug} bookmark={bookmark} />
+                <BookmarkCard 
+                  key={bookmark.id} 
+                  bookmark={{
+                    id: bookmark.id,
+                    url: bookmark.url,
+                    title: bookmark.title,
+                    description: bookmark.description,
+                    category: bookmark.category ? {
+                      id: bookmark.category.id.toString(),
+                      name: bookmark.category.name,
+                      color: bookmark.category.color || undefined,
+                      icon: bookmark.category.icon || undefined
+                    } : undefined,
+                    favicon: bookmark.favicon,
+                    excerpt: bookmark.excerpt,
+                    ogImage: bookmark.ogImage,
+                    isArchived: bookmark.isArchived,
+                    isFavorite: bookmark.isFavorite
+                  }} 
+                />
               ))}
             </BookmarkGrid>
 
@@ -65,7 +91,7 @@ export default async function Home({
               <div className="text-center text-gray-500 py-8">
                 No bookmarks found
                 {searchParams.search && ` matching "${searchParams.search}"`}
-                {searchParams.category && ` in category "${searchParams.category}"`}
+                {searchParams.category && ` in category "${categories.find(c => c.id.toString() === searchParams.category)?.name}"`}
               </div>
             )}
           </div>
