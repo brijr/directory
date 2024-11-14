@@ -130,7 +130,6 @@ export default async function Page({ params }: Props) {
             <img
               src={bookmark.ogImage}
               alt={bookmark.title}
-              fill
               className="object-cover"
             />
           </div>
