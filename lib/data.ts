@@ -8,24 +8,15 @@ export type Category = typeof categories.$inferSelect;
 export async function getAllBookmarks(): Promise<(Bookmark & { category: Category | null })[]> {
   const results = await db
     .select({
-      id: bookmarks.id,
-      title: bookmarks.title,
-      url: bookmarks.url,
-      description: bookmarks.description,
-      excerpt: bookmarks.excerpt,
-      favicon: bookmarks.favicon,
-      ogImage: bookmarks.ogImage,
-      isFavorite: bookmarks.isFavorite,
-      isArchived: bookmarks.isArchived,
-      categoryId: bookmarks.categoryId,
+      ...bookmarks,
       category: categories,
     })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id));
   
   return results.map(row => ({
-    ...row.bookmarks,
-    category: row.categories,
+    ...row,
+    category: row.category,
   }));
 }
 
@@ -36,16 +27,7 @@ export async function getAllCategories(): Promise<Category[]> {
 export async function getBookmarkById(id: number): Promise<(Bookmark & { category: Category | null }) | null> {
   const results = await db
     .select({
-      id: bookmarks.id,
-      title: bookmarks.title,
-      url: bookmarks.url,
-      description: bookmarks.description,
-      excerpt: bookmarks.excerpt,
-      favicon: bookmarks.favicon,
-      ogImage: bookmarks.ogImage,
-      isFavorite: bookmarks.isFavorite,
-      isArchived: bookmarks.isArchived,
-      categoryId: bookmarks.categoryId,
+      ...bookmarks,
       category: categories,
     })
     .from(bookmarks)
@@ -53,38 +35,33 @@ export async function getBookmarkById(id: number): Promise<(Bookmark & { categor
     .where(eq(bookmarks.id, id))
     .limit(1);
   
-  if (results.length === 0) return null;
-  
+  if (results.length === 0) {
+    return null;
+  }
+
   return {
-    ...results[0].bookmarks,
-    category: results[0].categories,
+    ...results[0],
+    category: results[0].category,
   };
 }
 
-export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { category: Category | null })[]> {
-  // Create a URL-safe slug from the bookmark URL by encoding it
-  const encodedUrl = encodeURIComponent(url);
-  
+export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { category: Category | null }) | null> {
   const results = await db
     .select({
-      id: bookmarks.id,
-      title: bookmarks.title,
-      url: bookmarks.url,
-      description: bookmarks.description,
-      excerpt: bookmarks.excerpt,
-      favicon: bookmarks.favicon,
-      ogImage: bookmarks.ogImage,
-      isFavorite: bookmarks.isFavorite,
-      isArchived: bookmarks.isArchived,
-      categoryId: bookmarks.categoryId,
+      ...bookmarks,
       category: categories,
     })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
-    .where(eq(bookmarks.url, decodeURIComponent(url)));
+    .where(eq(bookmarks.url, decodeURIComponent(url)))
+    .limit(1);
 
-  return results.map(row => ({
-    ...row.bookmarks,
-    category: row.categories,
-  }));
+  if (results.length === 0) {
+    return null;
+  }
+
+  return {
+    ...results[0],
+    category: results[0].category,
+  };
 }
