@@ -29,12 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  createBookmark,
-  updateBookmark,
-  deleteBookmark,
-  generateContent,
-} from "../actions";
+import { createBookmark, updateBookmark, deleteBookmark, generateContent } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -87,6 +82,7 @@ export function BookmarkManager({
     const formDataToSubmit = new FormData(form);
 
     try {
+      // @ts-expect-error Form submission type mismatch
       const response = isNewBookmark
         ? await createBookmark(null, formDataToSubmit)
         : await updateBookmark(null, formDataToSubmit);
@@ -143,9 +139,6 @@ export function BookmarkManager({
     }
   }, [isDialogOpen, selectedBookmark]);
 
-  // Handle form submission results
-  // Removed this block as it's no longer needed
-
   const onEdit = (bookmark: Bookmark & { category: Category | null }) => {
     setSelectedBookmark(bookmark);
     setIsNewBookmark(false);
@@ -165,7 +158,6 @@ export function BookmarkManager({
       formData.append("url", bookmark.url);
 
       try {
-        // @ts-ignore
         await deleteBookmark(formData);
         toast.success("Bookmark deleted successfully");
         window.location.reload();

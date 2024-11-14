@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 export function SearchBar() {

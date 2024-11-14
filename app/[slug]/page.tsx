@@ -33,11 +33,6 @@ export async function generateMetadata(
   // Get parent metadata (e.g., from layout.tsx)
   const previousImages = (await parent).openGraph?.images || [];
 
-  // Format category for metadata
-  const categoryText = bookmark.category
-    ? `${bookmark.category.icon} ${bookmark.category.name}`
-    : undefined;
-
   return {
     title: `${bookmark.title} | Directory`,
     description:

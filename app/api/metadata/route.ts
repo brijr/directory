@@ -15,18 +15,20 @@ export async function GET(request: Request) {
     const $ = load(html);
 
     // Get favicon
-    let favicon = $('link[rel="icon"]').attr('href') ||
+    let faviconUrl = $('link[rel="icon"]').attr('href') ||
                  $('link[rel="shortcut icon"]').attr('href') ||
                  $('link[rel="apple-touch-icon"]').attr('href');
 
     // If favicon is relative, make it absolute
-    if (favicon && !favicon.startsWith('http')) {
+    if (faviconUrl && !faviconUrl.startsWith('http')) {
       const baseUrl = new URL(url);
-      favicon = new URL(favicon, baseUrl.origin).toString();
+      faviconUrl = new URL(faviconUrl, baseUrl.origin).toString();
     }
 
+    const favicon = faviconUrl || '';
+
     // Get Open Graph image
-    let ogImage = $('meta[property="og:image"]').attr('content');
+    const ogImage = $('meta[property="og:image"]').attr('content');
 
     // Get title and description
     const title = $('meta[property="og:title"]').attr('content') || $('title').text();

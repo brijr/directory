@@ -23,7 +23,7 @@ export async function createCategory(
     const color = formData.get("color") as string;
     const icon = formData.get("icon") as string;
 
-    // @ts-ignore
+    // @ts-expect-error Database schema type mismatch
     await db.insert(categories).values({
       name,
       description,
@@ -34,9 +34,9 @@ export async function createCategory(
 
     revalidatePath("/admin");
     revalidatePath("/");
-
-    return { success: true };
-  } catch (error) {
+    return { message: "Category created successfully" };
+  } catch (err) {
+    console.error("Error creating category:", err);
     return { error: "Failed to create category" };
   }
 }
@@ -70,7 +70,7 @@ export async function updateCategory(
         color,
         icon,
       })
-      // @ts-ignore
+      // @ts-expect-error Database schema type mismatch
       .where(eq(categories.id, id));
 
     revalidatePath("/admin");
@@ -96,7 +96,7 @@ export async function deleteCategory(
       return { error: "No category ID provided" };
     }
 
-    // @ts-ignore
+    // @ts-expect-error Database schema type mismatch
     await db.delete(categories).where(eq(categories.id, id));
 
     revalidatePath("/admin");
@@ -280,7 +280,7 @@ export async function scrapeUrl(
     console.log("Scraped metadata:", result); // Debug log
 
     // Extract metadata from the first result
-    // @ts-ignore
+    // @ts-expect-error Metadata type mismatch
     const metadata = result?.[0] || {};
 
     return {
@@ -326,9 +326,9 @@ export async function generateContent(
         const results = await exa.search(url);
         console.log("Exa search results:", results); // Debug log
 
-        // @ts-ignore
+        // @ts-expect-error Search results type mismatch
         if (results?.results?.[0]?.summary) {
-          // @ts-ignore
+          // @ts-expect-error Summary type mismatch
           exaSummary = results.results[0].summary;
         }
         finalSearchResults = JSON.stringify(results);

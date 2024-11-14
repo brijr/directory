@@ -30,8 +30,9 @@ export default function AdminLogin() {
       } else {
         setError('Invalid password');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setError('Authentication failed');
     } finally {
       setLoading(false);
     }
