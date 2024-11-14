@@ -60,3 +60,10 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
 export const categoriesRelations = relations(categories, ({ many }) => ({
   bookmarks: many(bookmarks),
 }));
+
+// Type definitions
+export type Category = typeof categories.$inferSelect;
+export type NewCategory = typeof categories.$inferInsert;
+
+export type Bookmark = typeof bookmarks.$inferSelect;
+export type NewBookmark = typeof bookmarks.$inferInsert;

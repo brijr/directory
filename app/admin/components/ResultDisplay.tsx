@@ -1,14 +1,26 @@
 'use client';
 
-import { useFormStatus, useFormState } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { scrapeUrl } from '../actions';
 
-export function ResultDisplay() {
+interface ScrapeResult {
+  error: string | null;
+  data?: {
+    title: string;
+    description: string;
+    favicon: string;
+    ogImage: string;
+  };
+}
+
+interface ResultDisplayProps {
+  metadata: ScrapeResult | null;
+}
+
+export function ResultDisplay({ metadata }: ResultDisplayProps) {
   const { pending } = useFormStatus();
-  const [state] = useFormState(scrapeUrl, null);
 
   if (pending) {
     return (
@@ -22,13 +34,13 @@ export function ResultDisplay() {
     );
   }
 
-  if (!state) return null;
+  if (!metadata) return null;
 
-  if (state.error) {
+  if (metadata.error) {
     return (
       <Alert variant="destructive" className="mt-6">
         <AlertDescription>
-          {state.error}
+          {metadata.error}
         </AlertDescription>
       </Alert>
     );
@@ -40,7 +52,7 @@ export function ResultDisplay() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Scraping Results</h2>
           <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-[600px] text-sm">
-            {JSON.stringify(state.data, null, 2)}
+            {JSON.stringify(metadata.data, null, 2)}
           </pre>
         </div>
       </CardContent>

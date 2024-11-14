@@ -34,10 +34,15 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import type { Category, Bookmark } from "@/db/schema";
+
+interface BookmarkWithCategory extends Bookmark {
+  category: Category | null;
+}
 
 interface BookmarkManagerProps {
-  bookmarks: (Bookmark & { category: Category | null })[];
   categories: Category[];
+  bookmarks: BookmarkWithCategory[];
 }
 
 function generateSlug(title: string): string {
@@ -53,7 +58,7 @@ export function BookmarkManager({
 }: BookmarkManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewBookmark, setIsNewBookmark] = useState(true);
-  const [selectedBookmark, setSelectedBookmark] = useState<(Bookmark & { category: Category | null }) | null>(null);
+  const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithCategory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state management
@@ -74,29 +79,27 @@ export function BookmarkManager({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formDataToSubmit = new FormData(form);
+    setIsLoading(true);
+
+    const formDataToSubmit = new FormData(e.currentTarget);
 
     try {
-      // @ts-expect-error Form submission type mismatch
       const response = isNewBookmark
         ? await createBookmark(null, formDataToSubmit)
         : await updateBookmark(null, formDataToSubmit);
 
-      if (response.success) {
-        toast.success(
-          isNewBookmark
-            ? "Bookmark created successfully!"
-            : "Bookmark updated successfully!",
-        );
-        setIsDialogOpen(false);
-        window.location.reload();
-      } else if (response.error) {
+      if (response.error) {
         toast.error(response.error);
+      } else {
+        toast.success(isNewBookmark ? "Bookmark created!" : "Bookmark updated!");
+        setIsDialogOpen(false);
+        resetForm();
       }
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error("Error submitting bookmark:", error);
       toast.error("Failed to save bookmark");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -135,7 +138,7 @@ export function BookmarkManager({
     }
   }, [isDialogOpen, selectedBookmark]);
 
-  const onEdit = (bookmark: Bookmark & { category: Category | null }) => {
+  const onEdit = (bookmark: BookmarkWithCategory) => {
     setSelectedBookmark(bookmark);
     setIsNewBookmark(false);
     setIsDialogOpen(true);
@@ -147,19 +150,22 @@ export function BookmarkManager({
     setIsDialogOpen(true);
   };
 
-  const onDelete = async (bookmark: Bookmark) => {
-    if (confirm("Are you sure you want to delete this bookmark?")) {
+  const onDelete = async (bookmark: BookmarkWithCategory) => {
+    if (window.confirm("Are you sure you want to delete this bookmark?")) {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("id", bookmark.id.toString());
-      formData.append("url", bookmark.url);
 
       try {
-        await deleteBookmark(formData);
+        await deleteBookmark(null, formData);
         toast.success("Bookmark deleted successfully");
-        window.location.reload();
+        setIsDialogOpen(false);
+        resetForm();
       } catch (err) {
         console.error("Error deleting bookmark:", err);
         toast.error("Failed to delete bookmark");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -208,6 +214,22 @@ export function BookmarkManager({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      slug: "",
+      url: "",
+      description: "",
+      overview: "",
+      search_results: "",
+      favicon: "",
+      ogImage: "",
+      categoryId: "none",
+      isFavorite: false,
+      isArchived: false,
+    });
   };
 
   return (

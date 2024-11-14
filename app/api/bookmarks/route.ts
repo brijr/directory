@@ -22,14 +22,21 @@ export async function POST(request: Request) {
     // Insert the new bookmark
     await db.insert(bookmarks).values({
       url: body.url,
+      title: body.title,
       slug: body.slug,
-      name: body.name,
       description: body.description || null,
-      category: body.category || null,
-      use_case: body.use_case || null,
-      how_to_use: body.how_to_use || null,
+      categoryId: body.categoryId || null,
       overview: body.overview || null,
-      screenshot_url: body.screenshot_url || null,
+      favicon: body.favicon || null,
+      screenshot: body.screenshot || null,
+      ogImage: body.ogImage || null,
+      ogTitle: body.ogTitle || null,
+      ogDescription: body.ogDescription || null,
+      notes: body.notes || null,
+      tags: body.tags || null,
+      isArchived: body.isArchived || false,
+      isFavorite: body.isFavorite || false,
+      search_results: body.search_results || null,
     });
 
     return NextResponse.json({ message: 'Bookmark created successfully' }, { status: 201 });

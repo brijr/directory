@@ -11,6 +11,16 @@ interface ActionState {
   error?: string;
 }
 
+interface ScrapeResult {
+  error: string | null;
+  data?: {
+    title: string;
+    description: string;
+    favicon: string;
+    ogImage: string;
+  };
+}
+
 // Category Actions
 export async function createCategory(
   prevState: ActionState | null,
@@ -35,7 +45,7 @@ export async function createCategory(
 
     revalidatePath("/admin");
     revalidatePath("/");
-    return { message: "Category created successfully" };
+    return { success: true };
   } catch (err) {
     console.error("Error creating category:", err);
     return { error: "Failed to create category" };
@@ -251,12 +261,12 @@ export async function deleteBookmark(
 
 // URL Scraping Action
 export async function scrapeUrl(
-  prevState: ActionState | null,
+  prevState: ScrapeResult | null,
   formData: FormData,
-) {
+): Promise<ScrapeResult> {
   try {
     const url = formData.get("url") as string;
-    if (!url) return { error: "URL is required" };
+    if (!url) return { error: "URL is required", data: undefined };
 
     const exa = new Exa(process.env.EXASEARCH_API_KEY as string);
 
@@ -269,21 +279,20 @@ export async function scrapeUrl(
     console.log("Scraped metadata:", result); // Debug log
 
     // Extract metadata from the first result
-    // @ts-expect-error Metadata type mismatch
-    const metadata = result?.[0] || {};
+    const metadata = Array.isArray(result) && result.length > 0 ? result[0] : {};
 
     return {
+      error: null,
       data: {
         title: metadata.title || "",
         description: metadata.description || "",
         favicon: metadata.favicon || "",
         ogImage: metadata.ogImage || metadata.image || "",
       },
-      error: null,
     };
   } catch (err) {
     console.error("Error scraping URL:", err);
-    return { error: "Failed to scrape URL" };
+    return { error: "Failed to scrape URL", data: undefined };
   }
 }
 
