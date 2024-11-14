@@ -5,7 +5,6 @@ import { getAllCategories, getAllBookmarks } from "@/lib/data";
 import { CategoryManager } from "./components/CategoryManager";
 import { BookmarkManager } from "./components/BookmarkManager";
 import { Section, Container } from "@/components/craft";
-import AdminHeader from "./components/AdminHeader";
 
 export default async function AdminPage() {
   const categories = await getAllCategories();

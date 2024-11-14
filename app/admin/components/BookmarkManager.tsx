@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Bookmark, Category } from "@/lib/data";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -34,7 +34,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 
 interface BookmarkManagerProps {
   bookmarks: (Bookmark & { category: Category | null })[];
@@ -52,14 +51,10 @@ export function BookmarkManager({
   bookmarks,
   categories,
 }: BookmarkManagerProps) {
-  const [selectedBookmark, setSelectedBookmark] = useState<
-    (Bookmark & { category: Category | null }) | null
-  >(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isNewBookmark, setIsNewBookmark] = useState(false);
-  const [generatedSlug, setGeneratedSlug] = useState("");
-  const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isNewBookmark, setIsNewBookmark] = useState(true);
+  const [selectedBookmark, setSelectedBookmark] = useState<(Bookmark & { category: Category | null }) | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form state management
   const [formData, setFormData] = useState({
@@ -162,7 +157,8 @@ export function BookmarkManager({
         await deleteBookmark(formData);
         toast.success("Bookmark deleted successfully");
         window.location.reload();
-      } catch (error) {
+      } catch (err) {
+        console.error("Error deleting bookmark:", err);
         toast.error("Failed to delete bookmark");
       }
     }
@@ -184,7 +180,7 @@ export function BookmarkManager({
 
   const handleGenerateContent = async (formData: FormData) => {
     try {
-      setIsGenerating(true);
+      setIsLoading(true);
       const url = formData.get("url") as string;
       const searchResults = formData.get("search_results") as string;
 
@@ -210,7 +206,7 @@ export function BookmarkManager({
       console.error("Error generating content:", error);
       toast.error("Failed to generate content. Please try again.");
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
@@ -348,7 +344,7 @@ export function BookmarkManager({
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={isGenerating}
+                    disabled={isLoading}
                     onClick={(e) => {
                       e.preventDefault();
                       const form = e.currentTarget.closest("form");
@@ -357,7 +353,7 @@ export function BookmarkManager({
                       }
                     }}
                   >
-                    {isGenerating ? (
+                    {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating...

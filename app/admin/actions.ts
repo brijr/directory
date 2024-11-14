@@ -122,11 +122,8 @@ export async function createBookmark(
       slug = generateSlug(title);
     }
 
-    const categoryId = formData.get("categoryId") as string;
-    const overview = formData.get("overview") as string;
-    const search_results = formData.get("search_results") as string;
-    const favicon = formData.get("favicon") as string;
-    const ogImage = formData.get("ogImage") as string;
+    const categoryId = formData.get("categoryId");
+    const search_results = formData.get("search_results");
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
 
@@ -141,9 +138,9 @@ export async function createBookmark(
       slug,
       url,
       description,
-      categoryId: categoryId === "none" ? null : categoryId,
+      categoryId: categoryId || null,
       overview: finalOverview,
-      search_results: finalSearchResults,
+      search_results: finalSearchResults || null,
       favicon: metadata.favicon,
       ogImage: metadata.ogImage,
       isFavorite,
@@ -152,9 +149,11 @@ export async function createBookmark(
 
     revalidatePath("/admin");
     revalidatePath("/");
+    revalidatePath(`/${encodeURIComponent(url)}`);
 
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    console.error("Error creating bookmark:", err);
     return { error: "Failed to create bookmark" };
   }
 }
@@ -181,13 +180,8 @@ export async function updateBookmark(
       slug = generateSlug(title);
     }
 
-    const categoryId = formData.get("categoryId") as string;
-    const overview = formData.get("overview") as string;
-    const search_results = formData.get("search_results") as string;
-    const favicon = formData.get("favicon") as string;
-    const ogImage = formData.get("ogImage") as string;
-    const isFavorite = formData.get("isFavorite") === "true";
-    const isArchived = formData.get("isArchived") === "true";
+    const categoryId = formData.get("categoryId");
+    const search_results = formData.get("search_results");
 
     const {
       overview: finalOverview,
@@ -202,21 +196,21 @@ export async function updateBookmark(
         slug,
         url,
         description,
-        categoryId: categoryId === "none" ? null : categoryId,
+        categoryId: categoryId || null,
         overview: finalOverview,
-        search_results: finalSearchResults,
+        search_results: finalSearchResults || null,
         favicon: metadata.favicon,
         ogImage: metadata.ogImage,
-        isFavorite,
-        isArchived,
       })
       .where(eq(bookmarks.id, Number(id)));
 
     revalidatePath("/admin");
     revalidatePath("/");
+    revalidatePath(`/${encodeURIComponent(url)}`);
 
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    console.error("Error updating bookmark:", err);
     return { error: "Failed to update bookmark" };
   }
 }
