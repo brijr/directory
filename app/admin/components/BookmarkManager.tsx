@@ -18,11 +18,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
-
+  FormControl,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,15 +34,16 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from 'react-hook-form';
-import { updateBookmark, deleteBookmark } from '../actions';
+import { createBookmark, updateBookmark, deleteBookmark } from '../actions';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus } from 'lucide-react';
 
 const formSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   url: z.string().url('Must be a valid URL'),
   description: z.string().optional(),
@@ -64,12 +64,12 @@ interface BookmarkManagerProps {
 
 export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<(Bookmark & { category: Category | null }) | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewBookmark, setIsNewBookmark] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '',
       title: '',
       url: '',
       description: '',
@@ -84,6 +84,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
 
   const onEdit = (bookmark: Bookmark & { category: Category | null }) => {
     setSelectedBookmark(bookmark);
+    setIsNewBookmark(false);
     form.reset({
       id: bookmark.id.toString(),
       title: bookmark.title,
@@ -96,7 +97,24 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
       isFavorite: bookmark.isFavorite || false,
       isArchived: bookmark.isArchived || false,
     });
-    setIsEditDialogOpen(true);
+    setIsDialogOpen(true);
+  };
+
+  const onNew = () => {
+    setSelectedBookmark(null);
+    setIsNewBookmark(true);
+    form.reset({
+      title: '',
+      url: '',
+      description: '',
+      categoryId: '',
+      excerpt: '',
+      favicon: '',
+      ogImage: '',
+      isFavorite: false,
+      isArchived: false,
+    });
+    setIsDialogOpen(true);
   };
 
   const onDelete = async (bookmark: Bookmark) => {
@@ -123,11 +141,16 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
     });
 
     try {
-      await updateBookmark(formData);
-      setIsEditDialogOpen(false);
-      toast.success('Bookmark updated successfully');
+      if (isNewBookmark) {
+        await createBookmark(formData);
+        toast.success('Bookmark created successfully');
+      } else {
+        await updateBookmark(formData);
+        toast.success('Bookmark updated successfully');
+      }
+      setIsDialogOpen(false);
     } catch (error) {
-      toast.error('Failed to update bookmark');
+      toast.error(isNewBookmark ? 'Failed to create bookmark' : 'Failed to update bookmark');
     }
   };
 
@@ -135,8 +158,14 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Manage Bookmarks</h2>
-        <div className="text-sm text-muted-foreground">
-          {bookmarks.length} bookmarks
+        <div className="flex items-center gap-4">
+          <Button onClick={onNew} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            New Bookmark
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            {bookmarks.length} bookmarks
+          </div>
         </div>
       </div>
 
@@ -221,101 +250,21 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
         </TableBody>
       </Table>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Bookmark</DialogTitle>
+            <DialogTitle>{isNewBookmark ? 'New Bookmark' : 'Edit Bookmark'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <input type="hidden" {...form.register('id')} />
+            {!isNewBookmark && <input type="hidden" {...form.register('id')} />}
             
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.icon} {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="excerpt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Excerpt</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="favicon"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Favicon URL</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -325,61 +274,145 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
 
               <FormField
                 control={form.control}
-                name="ogImage"
+                name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>OG Image URL</FormLabel>
+                    <FormLabel>URL</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="flex gap-4">
               <FormField
                 control={form.control}
-                name="isFavorite"
+                name="description"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Textarea {...field} />
                     </FormControl>
-                    <FormLabel className="!mt-0">Favorite</FormLabel>
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="isArchived"
+                name="categoryId"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0">Archived</FormLabel>
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="excerpt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Excerpt</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="favicon"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Favicon URL</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="ogImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OG Image URL</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <FormField
+                  control={form.control}
+                  name="isFavorite"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0">Favorite</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isArchived"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0">Archived</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsEditDialogOpen(false)}
+                onClick={() => setIsDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit">
+                {isNewBookmark ? 'Create Bookmark' : 'Save Changes'}
+              </Button>
             </div>
           </form>
         </DialogContent>
