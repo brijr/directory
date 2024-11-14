@@ -1,11 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { ResultDisplay } from "./ResultDisplay";
 import { scrapeUrl } from '../actions';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormState } from "react-dom";
 import { toast } from "@/components/ui/toast"; // Assuming toast is imported from here
 
 export function URLScraper() {

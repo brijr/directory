@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface BookmarkManagerProps {
   bookmarks: (Bookmark & { category: Category | null })[];
@@ -243,12 +244,12 @@ export function BookmarkManager({
               <TableCell>
                 <div className="flex items-start gap-2">
                   {bookmark.favicon && (
-                    <img
+                    <Image
                       src={bookmark.favicon}
-                      alt=""
-                      width={16}
-                      height={16}
-                      className="mt-1"
+                      alt={`${bookmark.title} favicon`}
+                      width={20}
+                      height={20}
+                      className="mt-1 h-5 w-5 rounded-sm"
                     />
                   )}
                   <div>

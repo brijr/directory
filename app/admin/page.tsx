@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { getAllCategories, getAllBookmarks } from "@/lib/data";

@@ -17,12 +17,7 @@ export async function createCategory(
   formData: FormData,
 ) {
   try {
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const slug = formData.get("slug") as string;
-    const color = formData.get("color") as string;
-    const icon = formData.get("icon") as string;
-
+    const { name, description, slug, color, icon } = formData;
     // @ts-expect-error Database schema type mismatch
     await db.insert(categories).values({
       name,
@@ -55,11 +50,7 @@ export async function updateCategory(
       return { error: "No category ID provided" };
     }
 
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const slug = formData.get("slug") as string;
-    const color = formData.get("color") as string;
-    const icon = formData.get("icon") as string;
+    const { name, description, slug, color, icon } = formData;
 
     await db
       .update(categories)
@@ -77,7 +68,8 @@ export async function updateCategory(
     revalidatePath("/");
 
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    console.error("Error updating category:", err);
     return { error: "Failed to update category" };
   }
 }
@@ -103,7 +95,8 @@ export async function deleteCategory(
     revalidatePath("/");
 
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    console.error("Error deleting category:", err);
     return { error: "Failed to delete category" };
   }
 }
@@ -121,16 +114,13 @@ export async function createBookmark(
   formData: FormData,
 ) {
   try {
-    const title = formData.get("title") as string;
-    let slug = formData.get("slug") as string;
+    const { title, description, url, slug } = formData;
 
     // Generate slug if not provided
     if (!slug) {
       slug = generateSlug(title);
     }
 
-    const url = formData.get("url") as string;
-    const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
     const overview = formData.get("overview") as string;
     const search_results = formData.get("search_results") as string;
@@ -182,16 +172,13 @@ export async function updateBookmark(
       return { error: "No bookmark ID provided" };
     }
 
-    const title = formData.get("title") as string;
-    let slug = formData.get("slug") as string;
+    const { title, description, url, slug } = formData;
 
     // Generate slug if not provided
     if (!slug) {
       slug = generateSlug(title);
     }
 
-    const url = formData.get("url") as string;
-    const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
     const overview = formData.get("overview") as string;
     const search_results = formData.get("search_results") as string;
@@ -255,7 +242,8 @@ export async function deleteBookmark(
     revalidatePath(`/${encodeURIComponent(url)}`);
 
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    console.error("Error deleting bookmark:", err);
     return { error: "Failed to delete bookmark" };
   }
 }
@@ -292,8 +280,8 @@ export async function scrapeUrl(
       },
       error: null,
     };
-  } catch (error) {
-    console.error("Error scraping URL:", error);
+  } catch (err) {
+    console.error("Error scraping URL:", err);
     return { error: "Failed to scrape URL" };
   }
 }
