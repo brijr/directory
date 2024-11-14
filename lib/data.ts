@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { bookmarks, categories } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type Category = typeof categories.$inferSelect;
@@ -33,4 +33,19 @@ export async function getBookmarkById(id: number): Promise<(Bookmark & { categor
     ...results[0].bookmarks,
     category: results[0].categories,
   };
+}
+
+export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { category: Category | null })[]> {
+  // Create a URL-safe slug from the bookmark URL by encoding it
+  const encodedUrl = encodeURIComponent(url);
+  
+  const results = await db.select()
+    .from(bookmarks)
+    .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
+    .where(sql`${bookmarks.url} = ${decodeURIComponent(url)}`);
+
+  return results.map(row => ({
+    ...row.bookmarks,
+    category: row.categories,
+  }));
 }

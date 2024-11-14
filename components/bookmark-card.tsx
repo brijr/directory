@@ -3,7 +3,8 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Bookmark } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Star, Archive } from "lucide-react";
+import { Star, Archive, ExternalLink } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface BookmarkCardProps {
   bookmark: {
@@ -27,10 +28,7 @@ interface BookmarkCardProps {
 
 export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
   return (
-    <Link
-      href={bookmark.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
       className={cn(
         "not-prose group relative grid gap-2",
         "border bg-accent/50 p-1.5",
@@ -52,61 +50,77 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
         )}
       </div>
 
-      {/* Bookmark Image */}
-      <div className="relative aspect-video w-full overflow-hidden border">
-        <Image
-          src={bookmark.ogImage ?? "/placeholder.jpg"}
-          fill
-          className="object-cover"
-          alt={bookmark.title}
-        />
-        {bookmark.favicon && (
-          <div className="absolute bottom-2 left-2">
-            <div className="h-6 w-6 overflow-hidden rounded-full border bg-white p-1">
-              <Image
-                src={bookmark.favicon}
-                width={16}
-                height={16}
-                alt=""
-                className="h-full w-full object-contain"
-              />
-            </div>
+      {/* Card Content */}
+      <Link href={`/${encodeURIComponent(bookmark.url)}`} className="space-y-3">
+        <div className="flex items-start gap-2">
+          {bookmark.favicon && (
+            <Image
+              src={bookmark.favicon}
+              alt={`${bookmark.title} favicon`}
+              width={20}
+              height={20}
+              className="mt-1 h-5 w-5 rounded-sm"
+            />
+          )}
+          <div className="space-y-1">
+            <h2 className="font-medium leading-tight">{bookmark.title}</h2>
+            {bookmark.description && (
+              <p className="line-clamp-2 text-sm text-muted-foreground">
+                {bookmark.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Category Badge */}
+        {bookmark.category && (
+          <Badge
+            style={{
+              backgroundColor: bookmark.category.color,
+              color: "white",
+            }}
+            className="w-fit"
+          >
+            {bookmark.category.icon} {bookmark.category.name}
+          </Badge>
+        )}
+
+        {/* Preview Image */}
+        {bookmark.ogImage && (
+          <div className="relative aspect-video w-full overflow-hidden rounded border">
+            <Image
+              src={bookmark.ogImage}
+              alt={bookmark.title}
+              fill
+              className="object-cover transition-all group-hover:scale-105"
+            />
           </div>
         )}
-      </div>
+      </Link>
 
-      {/* Content */}
-      <div className="flex flex-col gap-3 px-1 pb-1 pt-1">
-        <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
-          <h3
-            className={cn(
-              "underline-offset-4 group-hover:underline",
-              "decoration-foreground/50 decoration-dotted",
-              "text-base leading-snug",
-              "min-w-0 flex-1 overflow-hidden truncate",
-            )}
-          >
-            {bookmark.title}
-          </h3>
-          {bookmark.category && (
-            <Badge 
-              variant="outline" 
-              className="bg-background"
-              style={{
-                borderColor: bookmark.category.color || undefined,
-                color: bookmark.category.color || undefined,
-              }}
-            >
-              {bookmark.category.name}
-            </Badge>
-          )}
-        </div>
-        
-        {/* Description or Excerpt */}
-        <p className="line-clamp-2 max-w-full text-xs text-muted-foreground">
-          {bookmark.description || bookmark.excerpt}
-        </p>
+      {/* Action Buttons */}
+      <div className="mt-2 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          asChild
+        >
+          <Link href={`/${encodeURIComponent(bookmark.url)}`}>
+            View Details
+          </Link>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          asChild
+        >
+          <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
+            Visit Site <ExternalLink className="ml-2 h-3 w-3" />
+          </Link>
+        </Button>
       </div>
-    </Link>
+    </div>
   );
 };

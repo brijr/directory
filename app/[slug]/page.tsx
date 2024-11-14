@@ -8,12 +8,10 @@ import Balancer from "react-wrap-balancer";
 import { getBookmarkBySlug } from "@/lib/data";
 
 // Component Imports
-import { Section, Container, Article } from "@/components/craft";
+import { Section } from "@/components/craft";
 import { Button } from "@/components/ui/button";
-
-// Markdown Rendering
-import ReactMarkdown from "react-markdown";
 import { BackButton } from "@/components/back-button";
+import { Badge } from "@/components/ui/badge";
 
 // Metadata
 import { Metadata } from "next";
@@ -23,7 +21,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = await getBookmarkBySlug(params.slug);
+  const data = await getBookmarkBySlug(decodeURIComponent(params.slug));
 
   if (data.length === 0) {
     notFound();
@@ -32,18 +30,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const bookmark = data[0];
 
   return {
-    title: `${bookmark.name} | designengineer.fyi`,
+    title: `${bookmark.title} | Directory`,
     description: bookmark.description,
     openGraph: {
-      title: `${bookmark.name} | designengineer.fyi`,
-      description: `${bookmark.description}`,
-      images: [bookmark.screenshot_url ?? "/placeholder.jpg"],
+      title: `${bookmark.title} | Directory`,
+      description: bookmark.description,
+      images: [bookmark.ogImage ?? "/placeholder.jpg"],
     },
   };
 }
 
 export default async function Page({ params }: Props) {
-  const data = await getBookmarkBySlug(params.slug);
+  const data = await getBookmarkBySlug(decodeURIComponent(params.slug));
 
   if (data.length === 0) {
     notFound();
@@ -52,63 +50,69 @@ export default async function Page({ params }: Props) {
   const bookmark = data[0];
 
   return (
-    <main>
+    <main className="container mx-auto py-8">
       <Section>
-        <Container>
-          <div className="mb-12">
-            <div className="grid grid-cols-[2fr_1fr] items-start justify-between gap-2">
+        <div className="mb-12">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <h1 className="text-xl font-medium">{bookmark.name}</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-3xl font-semibold">{bookmark.title}</h1>
+                <p className="text-lg text-muted-foreground">
                   <Balancer>{bookmark.description}</Balancer>
                 </p>
               </div>
-              <div className="my-4 flex gap-2 justify-self-end">
-                <Button className="not-prose">
-                  <Link
-                    href={`${bookmark.url}?utm_source=designengineer.fyi`}
-                    target="_blank"
-                  >
-                    Visit Resource
-                  </Link>
-                </Button>
-                <BackButton />
-              </div>
+              {bookmark.category && (
+                <Badge
+                  style={{
+                    backgroundColor: bookmark.category.color,
+                    color: 'white'
+                  }}
+                >
+                  {bookmark.category.icon} {bookmark.category.name}
+                </Badge>
+              )}
             </div>
-            <Link
-              href={`${bookmark.url}?utm_source=designengineer.fyi`}
-              target="_blank"
-            >
-              <Image
-                src={bookmark.screenshot_url ?? "/placeholder.jpg"}
-                width={1920}
-                height={1080}
-                alt={bookmark.name ?? "Design Engineer Resource"}
-                className="my-8 rounded-md border shadow-sm"
-              />
-            </Link>
+            <div className="flex gap-2">
+              <Button asChild>
+                <Link
+                  href={bookmark.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Visit Site
+                </Link>
+              </Button>
+              <BackButton />
+            </div>
           </div>
 
-          <Article>
-            <SectionHeader>Use Case</SectionHeader>
-            <ReactMarkdown>{bookmark.use_case}</ReactMarkdown>
+          {bookmark.ogImage && (
+            <Link
+              href={bookmark.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 block"
+            >
+              <Image
+                src={bookmark.ogImage}
+                width={1200}
+                height={630}
+                alt={bookmark.title}
+                className="rounded-lg border shadow-sm transition-all hover:shadow-md"
+              />
+            </Link>
+          )}
+        </div>
 
-            <SectionHeader>Overview</SectionHeader>
-            <ReactMarkdown>{bookmark.overview}</ReactMarkdown>
-
-            <SectionHeader>How to Use</SectionHeader>
-            <ReactMarkdown>{bookmark.how_to_use}</ReactMarkdown>
-          </Article>
-        </Container>
+        <div className="prose prose-slate max-w-none dark:prose-invert">
+          {bookmark.excerpt && (
+            <>
+              <h2>About</h2>
+              <p>{bookmark.excerpt}</p>
+            </>
+          )}
+        </div>
       </Section>
     </main>
   );
 }
-
-const SectionHeader = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="mb-6 border-b pb-1">
-      <h3 className="!text-xl !font-medium">{children}</h3>
-    </div>
-  );
-};
