@@ -1,77 +1,106 @@
 'use server';
 
 import { db } from "@/db/client";
-import { categories } from "@/db/schema";
+import { bookmarks, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import Exa from "exa-js";
+import { revalidatePath } from "next/cache";
 
 // Category Actions
-export async function createCategory(prevState: any, formData: FormData) {
-  const name = formData.get('name') as string;
-  const description = formData.get('description') as string;
-  const color = formData.get('color') as string;
-  const icon = formData.get('icon') as string;
-  
-  if (!name) return { error: 'Name is required' };
-  
-  // Create URL-friendly slug
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  
-  try {
-    await db.insert(categories).values({
+export async function createCategory(formData: FormData) {
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const slug = formData.get("slug") as string;
+  const color = formData.get("color") as string;
+  const icon = formData.get("icon") as string;
+
+  await db.insert(categories).values({
+    name,
+    description,
+    slug,
+    color,
+    icon,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function updateCategory(formData: FormData) {
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const slug = formData.get("slug") as string;
+  const color = formData.get("color") as string;
+  const icon = formData.get("icon") as string;
+
+  await db
+    .update(categories)
+    .set({
       name,
       description,
+      slug,
       color,
       icon,
-      slug,
-    });
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Error creating category:', error);
-    return { error: 'Failed to create category' };
-  }
+    })
+    .where(eq(categories.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
-export async function updateCategory(prevState: any, formData: FormData) {
-  const id = parseInt(formData.get('id') as string);
-  const name = formData.get('name') as string;
-  const description = formData.get('description') as string;
-  const color = formData.get('color') as string;
-  const icon = formData.get('icon') as string;
-  
-  if (!id || !name) return { error: 'ID and name are required' };
-  
-  try {
-    await db.update(categories)
-      .set({
-        name,
-        description,
-        color,
-        icon,
-        updatedAt: new Date(),
-      })
-      .where(eq(categories.id, id));
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Error updating category:', error);
-    return { error: 'Failed to update category' };
-  }
+export async function deleteCategory(formData: FormData) {
+  const id = formData.get("id") as string;
+
+  await db.delete(categories).where(eq(categories.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
 }
 
-export async function deleteCategory(prevState: any, formData: FormData) {
-  const id = parseInt(formData.get('id') as string);
-  
-  if (!id) return { error: 'ID is required' };
-  
-  try {
-    await db.delete(categories).where(eq(categories.id, id));
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting category:', error);
-    return { error: 'Failed to delete category' };
-  }
+// Bookmark Actions
+export async function updateBookmark(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const title = formData.get("title") as string;
+  const url = formData.get("url") as string;
+  const description = formData.get("description") as string;
+  const categoryId = formData.get("categoryId") ? Number(formData.get("categoryId")) : null;
+  const excerpt = formData.get("excerpt") as string;
+  const favicon = formData.get("favicon") as string;
+  const ogImage = formData.get("ogImage") as string;
+  const isFavorite = formData.get("isFavorite") === "true";
+  const isArchived = formData.get("isArchived") === "true";
+
+  await db
+    .update(bookmarks)
+    .set({
+      title,
+      url,
+      description,
+      categoryId,
+      excerpt,
+      favicon,
+      ogImage,
+      isFavorite,
+      isArchived,
+      updatedAt: new Date(),
+    })
+    .where(eq(bookmarks.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath(`/${encodeURIComponent(url)}`);
+}
+
+export async function deleteBookmark(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const url = formData.get("url") as string;
+
+  await db.delete(bookmarks).where(eq(bookmarks.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath(`/${encodeURIComponent(url)}`);
 }
 
 // URL Scraping Action

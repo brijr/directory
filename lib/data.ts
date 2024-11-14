@@ -1,12 +1,25 @@
 import { db } from "@/db/client";
 import { bookmarks, categories } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 
 export async function getAllBookmarks(): Promise<(Bookmark & { category: Category | null })[]> {
-  const results = await db.select()
+  const results = await db
+    .select({
+      id: bookmarks.id,
+      title: bookmarks.title,
+      url: bookmarks.url,
+      description: bookmarks.description,
+      excerpt: bookmarks.excerpt,
+      favicon: bookmarks.favicon,
+      ogImage: bookmarks.ogImage,
+      isFavorite: bookmarks.isFavorite,
+      isArchived: bookmarks.isArchived,
+      categoryId: bookmarks.categoryId,
+      category: categories,
+    })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id));
   
@@ -21,7 +34,20 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getBookmarkById(id: number): Promise<(Bookmark & { category: Category | null }) | null> {
-  const results = await db.select()
+  const results = await db
+    .select({
+      id: bookmarks.id,
+      title: bookmarks.title,
+      url: bookmarks.url,
+      description: bookmarks.description,
+      excerpt: bookmarks.excerpt,
+      favicon: bookmarks.favicon,
+      ogImage: bookmarks.ogImage,
+      isFavorite: bookmarks.isFavorite,
+      isArchived: bookmarks.isArchived,
+      categoryId: bookmarks.categoryId,
+      category: categories,
+    })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
     .where(eq(bookmarks.id, id))
@@ -39,10 +65,23 @@ export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { cate
   // Create a URL-safe slug from the bookmark URL by encoding it
   const encodedUrl = encodeURIComponent(url);
   
-  const results = await db.select()
+  const results = await db
+    .select({
+      id: bookmarks.id,
+      title: bookmarks.title,
+      url: bookmarks.url,
+      description: bookmarks.description,
+      excerpt: bookmarks.excerpt,
+      favicon: bookmarks.favicon,
+      ogImage: bookmarks.ogImage,
+      isFavorite: bookmarks.isFavorite,
+      isArchived: bookmarks.isArchived,
+      categoryId: bookmarks.categoryId,
+      category: categories,
+    })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
-    .where(sql`${bookmarks.url} = ${decodeURIComponent(url)}`);
+    .where(eq(bookmarks.url, decodeURIComponent(url)));
 
   return results.map(row => ({
     ...row.bookmarks,
