@@ -22,26 +22,29 @@ type Props = {
 
 export async function generateMetadata(
   { params }: Props,
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const bookmark = await getBookmarkBySlug(params.slug);
 
   if (!bookmark) {
     notFound();
   }
-  
+
   // Get parent metadata (e.g., from layout.tsx)
   const previousImages = (await parent).openGraph?.images || [];
-  
+
   // Format category for metadata
-  const categoryText = bookmark.category 
-    ? `${bookmark.category.icon} ${bookmark.category.name}` 
+  const categoryText = bookmark.category
+    ? `${bookmark.category.icon} ${bookmark.category.name}`
     : undefined;
 
   return {
     title: `${bookmark.title} | Directory`,
-    description: bookmark.description || bookmark.overview || `A curated bookmark from Directory`,
-    
+    description:
+      bookmark.description ||
+      bookmark.overview ||
+      `A curated bookmark from Directory`,
+
     // OpenGraph metadata for social sharing
     openGraph: {
       title: bookmark.title,
@@ -52,7 +55,7 @@ export async function generateMetadata(
         ...previousImages,
       ],
     },
-    
+
     // Twitter metadata
     twitter: {
       card: "summary_large_image",
@@ -95,7 +98,7 @@ export default async function Page({ params }: Props) {
               {bookmark.category && (
                 <Badge
                   style={{
-                    backgroundColor: bookmark.category.color,
+                    backgroundColor: bookmark.category.color!,
                     color: "white",
                   }}
                   className="w-fit"
@@ -116,10 +119,13 @@ export default async function Page({ params }: Props) {
 
         {/* Overview */}
         {bookmark.overview && (
-          <div className="prose prose-gray dark:prose-invert max-w-none">
+          <div className="prose prose-gray max-w-none dark:prose-invert">
             <div className="rounded-lg bg-accent/50 p-6">
               <h2 className="mt-0 text-xl font-semibold">Overview</h2>
-              <div className="mt-4" dangerouslySetInnerHTML={{ __html: bookmark.overview }} />
+              <div
+                className="mt-4"
+                dangerouslySetInnerHTML={{ __html: bookmark.overview }}
+              />
             </div>
           </div>
         )}
