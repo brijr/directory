@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Star, Archive, ExternalLink } from "lucide-react";
@@ -39,7 +38,10 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       {/* Status Icons */}
       <div className="absolute right-2 top-2 flex gap-1">
         {bookmark.isFavorite && (
-          <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500">
+          <Badge
+            variant="secondary"
+            className="bg-yellow-500/10 text-yellow-500"
+          >
             <Star className="h-3 w-3" />
           </Badge>
         )}
@@ -54,7 +56,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       <Link href={`/${bookmark.slug}`} className="space-y-3">
         <div className="flex items-start gap-2">
           {bookmark.favicon && (
-            <Image
+            <img
               src={bookmark.favicon}
               alt={`${bookmark.title} favicon`}
               width={20}
@@ -88,10 +90,9 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
         {/* Preview Image */}
         {bookmark.ogImage && (
           <div className="relative aspect-video w-full overflow-hidden rounded border">
-            <Image
+            <img
               src={bookmark.ogImage}
               alt={bookmark.title}
-              fill
               className="object-cover transition-all group-hover:scale-105"
             />
           </div>
@@ -100,22 +101,10 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
 
       {/* Action Buttons */}
       <div className="mt-2 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          asChild
-        >
-          <Link href={`/${bookmark.slug}`}>
-            View Details
-          </Link>
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/${bookmark.slug}`}>View Details</Link>
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          asChild
-        >
+        <Button variant="outline" size="sm" className="w-full" asChild>
           <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
             Visit Site <ExternalLink className="ml-2 h-3 w-3" />
           </Link>
