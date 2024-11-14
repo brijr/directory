@@ -14,13 +14,16 @@ import { BackButton } from "@/components/back-button";
 import { Badge } from "@/components/ui/badge";
 
 // Metadata
-import { Metadata } from "next";
+import { Metadata, ResolvingMetadata } from "next";
 
 type Props = {
   params: { slug: string };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
   const data = await getBookmarkBySlug(decodeURIComponent(params.slug));
 
   if (data.length === 0) {
@@ -28,14 +31,82 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const bookmark = data[0];
+  
+  // Get parent metadata (e.g., from layout.tsx)
+  const previousImages = (await parent).openGraph?.images || [];
+  
+  // Format category for metadata
+  const categoryText = bookmark.category 
+    ? `${bookmark.category.icon} ${bookmark.category.name}` 
+    : undefined;
 
   return {
     title: `${bookmark.title} | Directory`,
-    description: bookmark.description,
+    description: bookmark.description || bookmark.excerpt || `A curated bookmark from Directory`,
+    
+    // OpenGraph metadata for social sharing
     openGraph: {
-      title: `${bookmark.title} | Directory`,
-      description: bookmark.description,
-      images: [bookmark.ogImage ?? "/placeholder.jpg"],
+      title: bookmark.title,
+      description: bookmark.description || bookmark.excerpt || undefined,
+      url: bookmark.url,
+      siteName: 'Directory',
+      images: [
+        bookmark.ogImage ? {
+          url: bookmark.ogImage,
+          width: 1200,
+          height: 630,
+          alt: bookmark.title,
+        } : null,
+        ...previousImages,
+      ].filter(Boolean),
+      type: 'website',
+      locale: 'en_US',
+    },
+    
+    // Twitter metadata
+    twitter: {
+      card: 'summary_large_image',
+      title: bookmark.title,
+      description: bookmark.description || bookmark.excerpt || undefined,
+      images: bookmark.ogImage ? [bookmark.ogImage] : [],
+    },
+    
+    // Additional metadata
+    keywords: [
+      'bookmark',
+      'directory',
+      bookmark.category?.name,
+      'resource',
+      'link',
+    ].filter(Boolean),
+    
+    // Robots metadata
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    
+    // Alternative languages and canonical URL
+    alternates: {
+      canonical: `/${encodeURIComponent(bookmark.url)}`,
+    },
+    
+    // Additional metadata for rich results
+    other: {
+      'og:type': 'website',
+      'og:site_name': 'Directory',
+      'twitter:site': '@directory',
+      'application-name': 'Directory',
+      'apple-mobile-web-app-title': 'Directory',
+      'theme-color': bookmark.category?.color || '#000000',
+      ...(bookmark.favicon && { 'msapplication-TileImage': bookmark.favicon }),
     },
   };
 }
