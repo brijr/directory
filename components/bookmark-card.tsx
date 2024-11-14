@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Star, Archive, ExternalLink } from "lucide-react";

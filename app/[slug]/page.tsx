@@ -1,7 +1,6 @@
 // Next Imports
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import Balancer from "react-wrap-balancer";
 
 // Database Imports
