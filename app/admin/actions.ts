@@ -22,9 +22,10 @@ export async function createCategory(
     const slug = formData.get("slug") as string;
     const color = formData.get("color") as string;
     const icon = formData.get("icon") as string;
+    const id = slug; // Using slug as the ID since it's unique
 
-    // @ts-expect-error Database schema type mismatch
     await db.insert(categories).values({
+      id,
       name,
       description,
       slug,
@@ -50,7 +51,7 @@ export async function updateCategory(
       return { error: "No form data provided" };
     }
 
-    const id = formData.get("id");
+    const id = formData.get("id") as string;
     if (!id) {
       return { error: "No category ID provided" };
     }
@@ -70,7 +71,6 @@ export async function updateCategory(
         color,
         icon,
       })
-      // @ts-expect-error Database schema type mismatch
       .where(eq(categories.id, id));
 
     revalidatePath("/admin");
@@ -138,13 +138,8 @@ export async function createBookmark(
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
 
-    const {
-      overview: finalOverview,
-      search_results: finalSearchResults,
-      ...metadata
-    } = await generateContent(url, search_results);
+    const { overview, ...metadata } = await generateContent(url, search_results);
 
-    // @ts-expect-error Database schema type mismatch
     await db.insert(bookmarks).values({
       title,
       slug,
@@ -154,7 +149,7 @@ export async function createBookmark(
       search_results: search_results || null,
       isFavorite,
       isArchived,
-      overview: finalOverview,
+      overview,
       favicon: metadata.favicon,
       ogImage: metadata.ogImage,
     });
@@ -197,11 +192,7 @@ export async function updateBookmark(
     const categoryId = formData.get("categoryId") as string;
     const search_results = formData.get("search_results") as string;
 
-    const {
-      overview: finalOverview,
-      search_results: finalSearchResults,
-      ...metadata
-    } = await generateContent(url, search_results);
+    const { overview, ...metadata } = await generateContent(url, search_results);
 
     await db
       .update(bookmarks)
@@ -212,7 +203,7 @@ export async function updateBookmark(
         description,
         categoryId: categoryId || null,
         search_results: search_results || null,
-        overview: finalOverview,
+        overview,
         favicon: metadata.favicon,
         ogImage: metadata.ogImage,
       })
