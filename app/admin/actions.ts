@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { bookmarks, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import Exa from "exa-js"
 
 interface ActionState {
   success?: boolean;
