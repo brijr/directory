@@ -72,7 +72,25 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
             <form action={createAction} className="space-y-4">
               <div>
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" required />
+                <Input 
+                  id="name" 
+                  name="name" 
+                  required 
+                  onChange={(e) => {
+                    // Also update the slug field
+                    const slugInput = document.getElementById('slug') as HTMLInputElement;
+                    if (slugInput) {
+                      slugInput.value = e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/(^-|-$)/g, '');
+                    }
+                  }}
+                />
+              </div>
+              <div>
+                <Label htmlFor="slug">Slug</Label>
+                <Input id="slug" name="slug" required />
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
@@ -170,12 +188,26 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
             <input type="hidden" name="id" value={selectedCategory?.id} />
             <div>
               <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                name="name"
-                defaultValue={selectedCategory?.name}
-                required
+              <Input 
+                id="edit-name" 
+                name="name" 
+                defaultValue={selectedCategory?.name} 
+                required 
+                onChange={(e) => {
+                  // Also update the slug field
+                  const slugInput = document.getElementById('edit-slug') as HTMLInputElement;
+                  if (slugInput) {
+                    slugInput.value = e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, '-')
+                      .replace(/(^-|-$)/g, '');
+                  }
+                }}
               />
+            </div>
+            <div>
+              <Label htmlFor="edit-slug">Slug</Label>
+              <Input id="edit-slug" name="slug" defaultValue={selectedCategory?.slug} required />
             </div>
             <div>
               <Label htmlFor="edit-description">Description</Label>
