@@ -40,12 +40,12 @@ export async function generateMetadata(
 
   return {
     title: `${bookmark.title} | Directory`,
-    description: bookmark.description || bookmark.excerpt || `A curated bookmark from Directory`,
+    description: bookmark.description || bookmark.overview || `A curated bookmark from Directory`,
     
     // OpenGraph metadata for social sharing
     openGraph: {
       title: bookmark.title,
-      description: bookmark.description || bookmark.excerpt || undefined,
+      description: bookmark.description || bookmark.overview || undefined,
       url: bookmark.url,
       images: [
         ...(bookmark.ogImage ? [bookmark.ogImage] : []),
@@ -57,7 +57,7 @@ export async function generateMetadata(
     twitter: {
       card: "summary_large_image",
       title: bookmark.title,
-      description: bookmark.description || bookmark.excerpt || undefined,
+      description: bookmark.description || bookmark.overview || undefined,
       images: bookmark.ogImage ? [bookmark.ogImage] : [],
     },
   };

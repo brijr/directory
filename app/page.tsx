@@ -35,7 +35,7 @@ export default async function Home({
         bookmark.description?.toLowerCase().includes(searchTerm) ||
         bookmark.category?.name.toLowerCase().includes(searchTerm) ||
         bookmark.notes?.toLowerCase().includes(searchTerm) ||
-        bookmark.excerpt?.toLowerCase().includes(searchTerm)
+        bookmark.overview?.toLowerCase().includes(searchTerm)
       );
     });
 
@@ -78,7 +78,7 @@ export default async function Home({
                       icon: bookmark.category.icon || undefined
                     } : undefined,
                     favicon: bookmark.favicon,
-                    excerpt: bookmark.excerpt,
+                    overview: bookmark.overview,
                     ogImage: bookmark.ogImage,
                     isArchived: bookmark.isArchived,
                     isFavorite: bookmark.isFavorite,

@@ -117,11 +117,14 @@ export async function createBookmark(prevState: ActionState | null, formData: Fo
     const url = formData.get("url") as string;
     const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
-    const excerpt = formData.get("excerpt") as string;
+    const overview = formData.get("overview") as string;
+    const search_results = formData.get("search_results") as string;
     const favicon = formData.get("favicon") as string;
     const ogImage = formData.get("ogImage") as string;
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
+
+    const { overview: finalOverview, search_results: finalSearchResults } = await generateContent(url, search_results);
 
     await db.insert(bookmarks).values({
       title,
@@ -129,7 +132,8 @@ export async function createBookmark(prevState: ActionState | null, formData: Fo
       url,
       description,
       categoryId: categoryId === 'none' ? null : categoryId,
-      excerpt,
+      overview: finalOverview,
+      search_results: finalSearchResults,
       favicon,
       ogImage,
       isFavorite,
@@ -167,11 +171,14 @@ export async function updateBookmark(prevState: ActionState | null, formData: Fo
     const url = formData.get("url") as string;
     const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
-    const excerpt = formData.get("excerpt") as string;
+    const overview = formData.get("overview") as string;
+    const search_results = formData.get("search_results") as string;
     const favicon = formData.get("favicon") as string;
     const ogImage = formData.get("ogImage") as string;
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
+
+    const { overview: finalOverview, search_results: finalSearchResults } = await generateContent(url, search_results);
 
     await db
       .update(bookmarks)
@@ -181,7 +188,8 @@ export async function updateBookmark(prevState: ActionState | null, formData: Fo
         url,
         description,
         categoryId: categoryId === 'none' ? null : categoryId,
-        excerpt,
+        overview: finalOverview,
+        search_results: finalSearchResults,
         favicon,
         ogImage,
         isFavorite,
@@ -246,5 +254,51 @@ export async function scrapeUrl(prevState: ActionState | null, formData: FormDat
   } catch (error) {
     console.error('Error scraping URL:', error);
     return { error: 'Failed to scrape URL' };
+  }
+}
+
+export async function generateContent(url: string, searchResults: string | null) {
+  try {
+    // Get search results from Exa if not provided
+    let finalSearchResults = searchResults;
+    if (!finalSearchResults && url) {
+      try {
+        const exa = new Exa();
+        const results = await exa.search(url);
+        finalSearchResults = JSON.stringify(results);
+      } catch (error) {
+        console.error('Error fetching Exa search results:', error);
+        throw new Error('Failed to fetch search results');
+      }
+    }
+
+    if (!finalSearchResults) {
+      throw new Error('No search results available');
+    }
+
+    // Generate overview using Claude
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        searchResults: finalSearchResults,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate overview');
+    }
+
+    const data = await response.json();
+    return {
+      overview: data.overview,
+      search_results: finalSearchResults,
+    };
+  } catch (error) {
+    console.error('Error generating content:', error);
+    throw error;
   }
 }

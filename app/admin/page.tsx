@@ -20,7 +20,6 @@ export default async function AdminPage() {
           <TabsList>
             <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="scraper">URL Scraper</TabsTrigger>
           </TabsList>
         
           <TabsContent value="bookmarks">
@@ -28,7 +27,7 @@ export default async function AdminPage() {
               <BookmarkManager bookmarks={bookmarks} categories={categories} />
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="categories">
             <Card className="p-6">
               <CategoryManager categories={categories} />

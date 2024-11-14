@@ -4,8 +4,8 @@ import { relations } from 'drizzle-orm';
 
 // Categories table
 export const categories = sqliteTable("categories", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull().unique(),
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
   description: text("description"),
   slug: text("slug").notNull().unique(),
   color: text("color"), // For UI customization
@@ -24,13 +24,13 @@ export const bookmarks = sqliteTable("bookmarks", {
   description: text("description"),
   
   // Organization
-  categoryId: integer("category_id").references(() => categories.id),
+  categoryId: text("category_id").references(() => categories.id),
   tags: text("tags"), // Comma-separated tags
   
   // Metadata
   favicon: text("favicon"), // URL to the site's favicon
   screenshot: text("screenshot"), // URL to a screenshot of the page
-  excerpt: text("excerpt"), // Short preview of the content
+  overview: text("overview"), // Short preview of the content
   
   // SEO and sharing
   ogImage: text("og_image"), // Open Graph image URL
@@ -38,14 +38,15 @@ export const bookmarks = sqliteTable("bookmarks", {
   ogDescription: text("og_description"), // Open Graph description
   
   // Timestamps
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   lastVisited: integer("last_visited", { mode: "timestamp" }),
   
   // User data
   notes: text("notes"), // Personal notes about the bookmark
   isArchived: integer("is_archived", { mode: "boolean" }).notNull().default(false),
   isFavorite: integer("is_favorite", { mode: "boolean" }).notNull().default(false),
+  search_results: text("search_results"),
 });
 
 // Relations

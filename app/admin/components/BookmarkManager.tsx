@@ -29,12 +29,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { createBookmark, updateBookmark, deleteBookmark } from '../actions';
+import { createBookmark, updateBookmark, deleteBookmark, generateContent } from '../actions';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import { useFormState } from 'react-dom';
+import { Loader2 } from 'lucide-react';
 
 interface BookmarkManagerProps {
   bookmarks: (Bookmark & { category: Category | null })[];
@@ -54,6 +55,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
   const [isNewBookmark, setIsNewBookmark] = useState(false);
   const [generatedSlug, setGeneratedSlug] = useState("");
   const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [createState, createAction] = useFormState(createBookmark, null);
   const [updateState, updateAction] = useFormState(updateBookmark, null);
@@ -113,51 +115,34 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
     }
   };
 
-  const generateContent = async () => {
-    const urlInput = document.getElementById('url') as HTMLInputElement;
-    const url = urlInput.value.trim();
-
-    if (!url) {
-      toast.error('Please enter a URL first');
-      return;
-    }
-
+  const handleGenerateContent = async (formData: FormData) => {
     try {
-      setIsFetchingMetadata(true);
-      const response = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
-      const data = await response.json();
+      setIsGenerating(true);
+      const url = formData.get('url') as string;
+      const searchResults = formData.get('search_results') as string;
+      
+      const content = await generateContent(url, searchResults);
+      
+      // Update form fields with generated content
+      const overviewTextarea = document.querySelector('textarea[name="overview"]') as HTMLTextAreaElement;
+      const searchResultsInput = document.querySelector('input[name="search_results"]') as HTMLInputElement;
+      
+      if (overviewTextarea) overviewTextarea.value = content.overview;
+      if (searchResultsInput) searchResultsInput.value = content.search_results;
 
-      if (data.error) {
-        toast.error('Failed to fetch metadata');
-        return;
-      }
-
-      // Auto-fill the form fields
-      const titleInput = document.getElementById('title') as HTMLInputElement;
-      const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
-      const faviconInput = document.getElementById('favicon') as HTMLInputElement;
-      const ogImageInput = document.getElementById('ogImage') as HTMLInputElement;
-
-      if (!titleInput.value && data.title) {
-        titleInput.value = data.title;
-        handleTitleChange({ target: titleInput } as React.ChangeEvent<HTMLInputElement>);
-      }
-      if (!descriptionInput.value && data.description) {
-        descriptionInput.value = data.description;
-      }
-      if (data.favicon) {
-        faviconInput.value = data.favicon;
-      }
-      if (data.ogImage) {
-        ogImageInput.value = data.ogImage;
-      }
-
-      toast.success('Content generated successfully');
+      toast({
+        title: 'Content Generated',
+        description: 'Overview and search results have been generated successfully.',
+      });
+      
     } catch (error) {
-      console.error('Error fetching metadata:', error);
-      toast.error('Failed to fetch metadata');
+      toast({
+        title: 'Error',
+        description: 'Failed to generate content. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsFetchingMetadata(false);
+      setIsGenerating(false);
     }
   };
 
@@ -278,6 +263,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                   <Input
                     id="url"
                     name="url"
+                    type="url"
                     defaultValue={selectedBookmark?.url}
                     onChange={handleUrlChange}
                     placeholder="https://example.com"
@@ -286,13 +272,18 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
-                    onClick={generateContent}
-                    disabled={isFetchingMetadata}
+                    disabled={isGenerating}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget.closest('form');
+                      if (form) {
+                        handleGenerateContent(new FormData(form));
+                      }
+                    }}
                   >
-                    {isFetchingMetadata ? (
+                    {isGenerating ? (
                       <>
-                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></div>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating...
                       </>
                     ) : (
@@ -327,11 +318,27 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
               </div>
 
               <div>
+                <Label htmlFor="overview">Overview</Label>
+                <Textarea
+                  id="overview"
+                  name="overview"
+                  defaultValue={selectedBookmark?.overview ?? ''}
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <Input
+                type="hidden"
+                name="search_results"
+                defaultValue={selectedBookmark?.search_results ?? ''}
+              />
+
+              <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   name="description"
-                  defaultValue={selectedBookmark?.description || ''}
+                  defaultValue={selectedBookmark?.description}
                   rows={3}
                 />
               </div>
@@ -354,15 +361,6 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="excerpt">Excerpt</Label>
-                <Textarea
-                  id="excerpt"
-                  name="excerpt"
-                  defaultValue={selectedBookmark?.excerpt || ''}
-                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

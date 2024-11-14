@@ -18,7 +18,7 @@ interface BookmarkCardProps {
       icon?: string;
     };
     favicon?: string | null;
-    excerpt?: string | null;
+    overview?: string | null;
     ogImage?: string | null;
     isArchived: boolean;
     isFavorite: boolean;
