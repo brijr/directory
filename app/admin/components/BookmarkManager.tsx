@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Bookmark, Category } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,6 +53,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewBookmark, setIsNewBookmark] = useState(false);
   const [generatedSlug, setGeneratedSlug] = useState("");
+  const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
 
   const [createState, createAction] = useFormState(createBookmark, null);
   const [updateState, updateAction] = useFormState(updateBookmark, null);
@@ -100,6 +101,64 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
     const title = e.target.value;
     const slug = generateSlug(title);
     setGeneratedSlug(slug);
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let url = e.target.value.trim();
+    
+    // If URL doesn't start with a protocol, add https://
+    if (url && !url.match(/^https?:\/\//)) {
+      url = `https://${url}`;
+      e.target.value = url;
+    }
+  };
+
+  const generateContent = async () => {
+    const urlInput = document.getElementById('url') as HTMLInputElement;
+    const url = urlInput.value.trim();
+
+    if (!url) {
+      toast.error('Please enter a URL first');
+      return;
+    }
+
+    try {
+      setIsFetchingMetadata(true);
+      const response = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+
+      if (data.error) {
+        toast.error('Failed to fetch metadata');
+        return;
+      }
+
+      // Auto-fill the form fields
+      const titleInput = document.getElementById('title') as HTMLInputElement;
+      const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
+      const faviconInput = document.getElementById('favicon') as HTMLInputElement;
+      const ogImageInput = document.getElementById('ogImage') as HTMLInputElement;
+
+      if (!titleInput.value && data.title) {
+        titleInput.value = data.title;
+        handleTitleChange({ target: titleInput } as React.ChangeEvent<HTMLInputElement>);
+      }
+      if (!descriptionInput.value && data.description) {
+        descriptionInput.value = data.description;
+      }
+      if (data.favicon) {
+        faviconInput.value = data.favicon;
+      }
+      if (data.ogImage) {
+        ogImageInput.value = data.ogImage;
+      }
+
+      toast.success('Content generated successfully');
+    } catch (error) {
+      console.error('Error fetching metadata:', error);
+      toast.error('Failed to fetch metadata');
+    } finally {
+      setIsFetchingMetadata(false);
+    }
   };
 
   return (
@@ -214,6 +273,36 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
             
             <div className="space-y-4">
               <div>
+                <Label htmlFor="url">URL</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="url"
+                    name="url"
+                    defaultValue={selectedBookmark?.url}
+                    onChange={handleUrlChange}
+                    placeholder="https://example.com"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={generateContent}
+                    disabled={isFetchingMetadata}
+                  >
+                    {isFetchingMetadata ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Content'
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
@@ -238,21 +327,12 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
               </div>
 
               <div>
-                <Label htmlFor="url">URL</Label>
-                <Input
-                  id="url"
-                  name="url"
-                  defaultValue={selectedBookmark?.url}
-                  required
-                />
-              </div>
-
-              <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   name="description"
                   defaultValue={selectedBookmark?.description || ''}
+                  rows={3}
                 />
               </div>
 
