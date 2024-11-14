@@ -17,7 +17,12 @@ export async function createCategory(
   formData: FormData,
 ) {
   try {
-    const { name, description, slug, color, icon } = formData;
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const slug = formData.get("slug") as string;
+    const color = formData.get("color") as string;
+    const icon = formData.get("icon") as string;
+
     // @ts-expect-error Database schema type mismatch
     await db.insert(categories).values({
       name,
@@ -50,7 +55,11 @@ export async function updateCategory(
       return { error: "No category ID provided" };
     }
 
-    const { name, description, slug, color, icon } = formData;
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const slug = formData.get("slug") as string;
+    const color = formData.get("color") as string;
+    const icon = formData.get("icon") as string;
 
     await db
       .update(categories)
@@ -114,7 +123,9 @@ export async function createBookmark(
   formData: FormData,
 ) {
   try {
-    const { title, description, url } = formData;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const url = formData.get("url") as string;
     let slug = formData.get("slug") as string;
 
     // Generate slug if not provided
@@ -122,8 +133,8 @@ export async function createBookmark(
       slug = generateSlug(title);
     }
 
-    const categoryId = formData.get("categoryId");
-    const search_results = formData.get("search_results");
+    const categoryId = formData.get("categoryId") as string;
+    const search_results = formData.get("search_results") as string;
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
 
@@ -133,18 +144,19 @@ export async function createBookmark(
       ...metadata
     } = await generateContent(url, search_results);
 
+    // @ts-expect-error Database schema type mismatch
     await db.insert(bookmarks).values({
       title,
       slug,
       url,
       description,
       categoryId: categoryId || null,
-      overview: finalOverview,
-      search_results: finalSearchResults || null,
-      favicon: metadata.favicon,
-      ogImage: metadata.ogImage,
+      search_results: search_results || null,
       isFavorite,
       isArchived,
+      overview: finalOverview,
+      favicon: metadata.favicon,
+      ogImage: metadata.ogImage,
     });
 
     revalidatePath("/admin");
@@ -172,7 +184,9 @@ export async function updateBookmark(
       return { error: "No bookmark ID provided" };
     }
 
-    const { title, description, url } = formData;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const url = formData.get("url") as string;
     let slug = formData.get("slug") as string;
 
     // Generate slug if not provided
@@ -180,8 +194,8 @@ export async function updateBookmark(
       slug = generateSlug(title);
     }
 
-    const categoryId = formData.get("categoryId");
-    const search_results = formData.get("search_results");
+    const categoryId = formData.get("categoryId") as string;
+    const search_results = formData.get("search_results") as string;
 
     const {
       overview: finalOverview,
@@ -197,8 +211,8 @@ export async function updateBookmark(
         url,
         description,
         categoryId: categoryId || null,
+        search_results: search_results || null,
         overview: finalOverview,
-        search_results: finalSearchResults || null,
         favicon: metadata.favicon,
         ogImage: metadata.ogImage,
       })
