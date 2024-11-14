@@ -17,8 +17,10 @@ interface Bookmark {
 
 export default function ManageBookmarks() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [filteredBookmarks, setFilteredBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch bookmarks
   const fetchBookmarks = async () => {
@@ -29,6 +31,7 @@ export default function ManageBookmarks() {
       }
       const data = await response.json();
       setBookmarks(data);
+      setFilteredBookmarks(data);
       setError(null);
     } catch (err) {
       setError('Failed to load bookmarks');
@@ -36,6 +39,28 @@ export default function ManageBookmarks() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle search
+  const handleSearch = (searchValue: string) => {
+    setSearchTerm(searchValue);
+    if (!searchValue.trim()) {
+      setFilteredBookmarks(bookmarks);
+      return;
+    }
+
+    const searchLower = searchValue.toLowerCase();
+    const filtered = bookmarks.filter((bookmark) => {
+      return (
+        bookmark.name.toLowerCase().includes(searchLower) ||
+        bookmark.url.toLowerCase().includes(searchLower) ||
+        bookmark.description?.toLowerCase().includes(searchLower) ||
+        bookmark.category?.toLowerCase().includes(searchLower) ||
+        bookmark.use_case?.toLowerCase().includes(searchLower) ||
+        bookmark.overview?.toLowerCase().includes(searchLower)
+      );
+    });
+    setFilteredBookmarks(filtered);
   };
 
   // Delete bookmark
@@ -93,8 +118,39 @@ export default function ManageBookmarks() {
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search bookmarks..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full p-3 pl-10 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          />
+          <svg
+            className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+        <div className="mt-2 text-sm text-gray-500">
+          Found {filteredBookmarks.length} bookmark{filteredBookmarks.length !== 1 ? 's' : ''}
+          {searchTerm && ` matching "${searchTerm}"`}
+        </div>
+      </div>
+
       <div className="grid gap-4">
-        {bookmarks.map((bookmark) => (
+        {filteredBookmarks.map((bookmark) => (
           <div
             key={bookmark.url}
             className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
@@ -129,9 +185,11 @@ export default function ManageBookmarks() {
           </div>
         ))}
 
-        {bookmarks.length === 0 && (
+        {filteredBookmarks.length === 0 && (
           <div className="text-center text-gray-500 py-8">
-            No bookmarks found. Add some bookmarks to get started!
+            {searchTerm 
+              ? `No bookmarks found matching "${searchTerm}"`
+              : 'No bookmarks found. Add some bookmarks to get started!'}
           </div>
         )}
       </div>
