@@ -3,141 +3,210 @@
 import { db } from "@/db/client";
 import { bookmarks, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import Exa from "exa-js";
 import { revalidatePath } from "next/cache";
 
-// Category Actions
-export async function createCategory(formData: FormData) {
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const slug = formData.get("slug") as string;
-  const color = formData.get("color") as string;
-  const icon = formData.get("icon") as string;
-
-  await db.insert(categories).values({
-    name,
-    description,
-    slug,
-    color,
-    icon,
-  });
-
-  revalidatePath("/admin");
-  revalidatePath("/");
+interface ActionState {
+  success?: boolean;
+  error?: string;
 }
 
-export async function updateCategory(formData: FormData) {
-  const id = formData.get("id") as string;
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const slug = formData.get("slug") as string;
-  const color = formData.get("color") as string;
-  const icon = formData.get("icon") as string;
+// Category Actions
+export async function createCategory(prevState: ActionState | null, formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const slug = formData.get("slug") as string;
+    const color = formData.get("color") as string;
+    const icon = formData.get("icon") as string;
 
-  await db
-    .update(categories)
-    .set({
+    await db.insert(categories).values({
       name,
       description,
       slug,
       color,
       icon,
-    })
-    .where(eq(categories.id, id));
+    });
 
-  revalidatePath("/admin");
-  revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to create category" };
+  }
 }
 
-export async function deleteCategory(formData: FormData) {
-  const id = formData.get("id") as string;
+export async function updateCategory(prevState: ActionState | null, formData: FormData) {
+  try {
+    if (!formData) {
+      return { error: "No form data provided" };
+    }
 
-  await db.delete(categories).where(eq(categories.id, id));
+    const id = formData.get("id");
+    if (!id) {
+      return { error: "No category ID provided" };
+    }
 
-  revalidatePath("/admin");
-  revalidatePath("/");
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const slug = formData.get("slug") as string;
+    const color = formData.get("color") as string;
+    const icon = formData.get("icon") as string;
+
+    await db
+      .update(categories)
+      .set({
+        name,
+        description,
+        slug,
+        color,
+        icon,
+      })
+      .where(eq(categories.id, id));
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to update category" };
+  }
+}
+
+export async function deleteCategory(prevState: ActionState | null, formData: FormData) {
+  try {
+    if (!formData) {
+      return { error: "No form data provided" };
+    }
+
+    const id = formData.get("id");
+    if (!id) {
+      return { error: "No category ID provided" };
+    }
+
+    await db.delete(categories).where(eq(categories.id, id));
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to delete category" };
+  }
 }
 
 // Bookmark Actions
-export async function createBookmark(formData: FormData) {
-  const title = formData.get("title") as string;
-  const url = formData.get("url") as string;
-  const description = formData.get("description") as string;
-  const categoryId = formData.get("categoryId") as string;
-  const excerpt = formData.get("excerpt") as string;
-  const favicon = formData.get("favicon") as string;
-  const ogImage = formData.get("ogImage") as string;
-  const isFavorite = formData.get("isFavorite") === "true";
-  const isArchived = formData.get("isArchived") === "true";
+export async function createBookmark(prevState: ActionState | null, formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const url = formData.get("url") as string;
+    const description = formData.get("description") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const excerpt = formData.get("excerpt") as string;
+    const favicon = formData.get("favicon") as string;
+    const ogImage = formData.get("ogImage") as string;
+    const isFavorite = formData.get("isFavorite") === "true";
+    const isArchived = formData.get("isArchived") === "true";
 
-  await db.insert(bookmarks).values({
-    title,
-    url,
-    description,
-    categoryId: categoryId || null,
-    excerpt,
-    favicon,
-    ogImage,
-    isFavorite,
-    isArchived,
-  });
-
-  revalidatePath("/admin");
-  revalidatePath("/");
-}
-
-export async function updateBookmark(formData: FormData) {
-  const id = Number(formData.get("id"));
-  const title = formData.get("title") as string;
-  const url = formData.get("url") as string;
-  const description = formData.get("description") as string;
-  const categoryId = formData.get("categoryId") ? Number(formData.get("categoryId")) : null;
-  const excerpt = formData.get("excerpt") as string;
-  const favicon = formData.get("favicon") as string;
-  const ogImage = formData.get("ogImage") as string;
-  const isFavorite = formData.get("isFavorite") === "true";
-  const isArchived = formData.get("isArchived") === "true";
-
-  await db
-    .update(bookmarks)
-    .set({
+    await db.insert(bookmarks).values({
       title,
       url,
       description,
-      categoryId,
+      categoryId: categoryId === 'none' ? null : categoryId,
       excerpt,
       favicon,
       ogImage,
       isFavorite,
       isArchived,
-      updatedAt: new Date(),
-    })
-    .where(eq(bookmarks.id, id));
+    });
 
-  revalidatePath("/admin");
-  revalidatePath("/");
-  revalidatePath(`/${encodeURIComponent(url)}`);
+    revalidatePath("/admin");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to create bookmark" };
+  }
 }
 
-export async function deleteBookmark(formData: FormData) {
-  const id = Number(formData.get("id"));
-  const url = formData.get("url") as string;
+export async function updateBookmark(prevState: ActionState | null, formData: FormData) {
+  try {
+    if (!formData) {
+      return { error: "No form data provided" };
+    }
 
-  await db.delete(bookmarks).where(eq(bookmarks.id, id));
+    const id = formData.get("id");
+    if (!id) {
+      return { error: "No bookmark ID provided" };
+    }
 
-  revalidatePath("/admin");
-  revalidatePath("/");
-  revalidatePath(`/${encodeURIComponent(url)}`);
+    const title = formData.get("title") as string;
+    const url = formData.get("url") as string;
+    const description = formData.get("description") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const excerpt = formData.get("excerpt") as string;
+    const favicon = formData.get("favicon") as string;
+    const ogImage = formData.get("ogImage") as string;
+    const isFavorite = formData.get("isFavorite") === "true";
+    const isArchived = formData.get("isArchived") === "true";
+
+    await db
+      .update(bookmarks)
+      .set({
+        title,
+        url,
+        description,
+        categoryId: categoryId === 'none' ? null : categoryId,
+        excerpt,
+        favicon,
+        ogImage,
+        isFavorite,
+        isArchived,
+      })
+      .where(eq(bookmarks.id, Number(id)));
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to update bookmark" };
+  }
+}
+
+export async function deleteBookmark(prevState: ActionState | null, formData: FormData) {
+  try {
+    if (!formData) {
+      return { error: "No form data provided" };
+    }
+
+    const id = formData.get("id");
+    if (!id) {
+      return { error: "No bookmark ID provided" };
+    }
+
+    const url = formData.get("url") as string;
+
+    await db.delete(bookmarks).where(eq(bookmarks.id, Number(id)));
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+    revalidatePath(`/${encodeURIComponent(url)}`);
+    
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to delete bookmark" };
+  }
 }
 
 // URL Scraping Action
-export async function scrapeUrl(prevState: any, formData: FormData) {
-  const url = formData.get('url') as string;
-  if (!url) return { data: null, error: 'URL is required' };
-  
-  const exa = new Exa("8e22846c-616f-4a1f-a677-db54533d1065");
-  
+export async function scrapeUrl(prevState: ActionState | null, formData: FormData) {
   try {
+    const url = formData.get('url') as string;
+    if (!url) return { error: 'URL is required' };
+    
+    const exa = new Exa("8e22846c-616f-4a1f-a677-db54533d1065");
+    
     const result = await exa.getContents(
       [url],
       {
@@ -152,6 +221,6 @@ export async function scrapeUrl(prevState: any, formData: FormData) {
     return { data: result, error: null };
   } catch (error) {
     console.error('Error scraping URL:', error);
-    return { data: null, error: 'Failed to scrape URL' };
+    return { error: 'Failed to scrape URL' };
   }
 }

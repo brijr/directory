@@ -16,13 +16,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-} from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -33,29 +29,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from 'react-hook-form';
 import { createBookmark, updateBookmark, deleteBookmark } from '../actions';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
-
-const formSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(1, 'Title is required'),
-  url: z.string().url('Must be a valid URL'),
-  description: z.string().optional(),
-  categoryId: z.string().optional(),
-  excerpt: z.string().optional(),
-  favicon: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  ogImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  isFavorite: z.boolean(),
-  isArchived: z.boolean(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useFormState } from 'react-dom';
 
 interface BookmarkManagerProps {
   bookmarks: (Bookmark & { category: Category | null })[];
@@ -67,53 +46,29 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewBookmark, setIsNewBookmark] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-      url: '',
-      description: '',
-      categoryId: '',
-      excerpt: '',
-      favicon: '',
-      ogImage: '',
-      isFavorite: false,
-      isArchived: false,
-    },
-  });
+  const [createState, createAction] = useFormState(createBookmark, null);
+  const [updateState, updateAction] = useFormState(updateBookmark, null);
+
+  // Handle form submission results
+  if (createState?.success || updateState?.success) {
+    toast.success(isNewBookmark ? 'Bookmark created successfully!' : 'Bookmark updated successfully!');
+    setIsDialogOpen(false);
+    window.location.reload(); // Refresh to show changes
+  }
+
+  if (createState?.error || updateState?.error) {
+    toast.error(createState?.error || updateState?.error);
+  }
 
   const onEdit = (bookmark: Bookmark & { category: Category | null }) => {
     setSelectedBookmark(bookmark);
     setIsNewBookmark(false);
-    form.reset({
-      id: bookmark.id.toString(),
-      title: bookmark.title,
-      url: bookmark.url,
-      description: bookmark.description || '',
-      categoryId: bookmark.categoryId?.toString() || '',
-      excerpt: bookmark.excerpt || '',
-      favicon: bookmark.favicon || '',
-      ogImage: bookmark.ogImage || '',
-      isFavorite: bookmark.isFavorite || false,
-      isArchived: bookmark.isArchived || false,
-    });
     setIsDialogOpen(true);
   };
 
   const onNew = () => {
     setSelectedBookmark(null);
     setIsNewBookmark(true);
-    form.reset({
-      title: '',
-      url: '',
-      description: '',
-      categoryId: '',
-      excerpt: '',
-      favicon: '',
-      ogImage: '',
-      isFavorite: false,
-      isArchived: false,
-    });
     setIsDialogOpen(true);
   };
 
@@ -126,31 +81,10 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
       try {
         await deleteBookmark(formData);
         toast.success('Bookmark deleted successfully');
+        window.location.reload();
       } catch (error) {
         toast.error('Failed to delete bookmark');
       }
-    }
-  };
-
-  const onSubmit = async (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value.toString());
-      }
-    });
-
-    try {
-      if (isNewBookmark) {
-        await createBookmark(formData);
-        toast.success('Bookmark created successfully');
-      } else {
-        await updateBookmark(formData);
-        toast.success('Bookmark updated successfully');
-      }
-      setIsDialogOpen(false);
-    } catch (error) {
-      toast.error(isNewBookmark ? 'Failed to create bookmark' : 'Failed to update bookmark');
     }
   };
 
@@ -255,154 +189,119 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
           <DialogHeader>
             <DialogTitle>{isNewBookmark ? 'New Bookmark' : 'Edit Bookmark'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {!isNewBookmark && <input type="hidden" {...form.register('id')} />}
+          <form action={isNewBookmark ? createAction : updateAction} className="space-y-4">
+            {!isNewBookmark && selectedBookmark && (
+              <input
+                type="hidden"
+                name="id"
+                value={selectedBookmark.id.toString()}
+              />
+            )}
             
             <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  defaultValue={selectedBookmark?.title}
+                  required
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="url">URL</Label>
+                <Input
+                  id="url"
+                  name="url"
+                  type="url"
+                  defaultValue={selectedBookmark?.url}
+                  required
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  defaultValue={selectedBookmark?.description || ''}
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="categoryId">Category</Label>
+                <Select
+                  name="categoryId"
+                  defaultValue={selectedBookmark?.categoryId?.toString() || 'none'}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.icon} {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="excerpt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Excerpt</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="excerpt">Excerpt</Label>
+                <Textarea
+                  id="excerpt"
+                  name="excerpt"
+                  defaultValue={selectedBookmark?.excerpt || ''}
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="favicon"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Favicon URL</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <Label htmlFor="favicon">Favicon URL</Label>
+                  <Input
+                    id="favicon"
+                    name="favicon"
+                    type="url"
+                    defaultValue={selectedBookmark?.favicon || ''}
+                  />
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="ogImage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>OG Image URL</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <Label htmlFor="ogImage">OG Image URL</Label>
+                  <Input
+                    id="ogImage"
+                    name="ogImage"
+                    type="url"
+                    defaultValue={selectedBookmark?.ogImage || ''}
+                  />
+                </div>
               </div>
 
               <div className="flex gap-4">
-                <FormField
-                  control={form.control}
-                  name="isFavorite"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Favorite</FormLabel>
-                    </FormItem>
-                  )}
-                />
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="isFavorite"
+                    name="isFavorite"
+                    defaultChecked={selectedBookmark?.isFavorite || false}
+                  />
+                  <Label htmlFor="isFavorite">Favorite</Label>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="isArchived"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Archived</FormLabel>
-                    </FormItem>
-                  )}
-                />
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="isArchived"
+                    name="isArchived"
+                    defaultChecked={selectedBookmark?.isArchived || false}
+                  />
+                  <Label htmlFor="isArchived">Archived</Label>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -413,7 +312,7 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
               <Button type="submit">
                 {isNewBookmark ? 'Create Bookmark' : 'Save Changes'}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
