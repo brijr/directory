@@ -70,11 +70,81 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  // Redirect to the actual URL
   return (
-    <meta
-      httpEquiv="refresh"
-      content={`0;url=${bookmark.url}`}
-    />
+    <Section>
+      <div className="mx-auto max-w-4xl space-y-8">
+        {/* Back Button */}
+        <BackButton />
+
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            {bookmark.favicon && (
+              <Image
+                src={bookmark.favicon}
+                alt={`${bookmark.title} favicon`}
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-lg"
+              />
+            )}
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold">
+                <Balancer>{bookmark.title}</Balancer>
+              </h1>
+              {bookmark.category && (
+                <Badge
+                  style={{
+                    backgroundColor: bookmark.category.color,
+                    color: "white",
+                  }}
+                  className="w-fit"
+                >
+                  {bookmark.category.icon} {bookmark.category.name}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          {bookmark.description && (
+            <p className="text-lg text-muted-foreground">
+              <Balancer>{bookmark.description}</Balancer>
+            </p>
+          )}
+        </div>
+
+        {/* Overview */}
+        {bookmark.overview && (
+          <div className="prose prose-gray dark:prose-invert max-w-none">
+            <div className="rounded-lg bg-accent/50 p-6">
+              <h2 className="mt-0 text-xl font-semibold">Overview</h2>
+              <div className="mt-4" dangerouslySetInnerHTML={{ __html: bookmark.overview }} />
+            </div>
+          </div>
+        )}
+
+        {/* Preview Image */}
+        {bookmark.ogImage && (
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+            <Image
+              src={bookmark.ogImage}
+              alt={bookmark.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        {/* Visit Button */}
+        <div className="flex justify-center">
+          <Button asChild size="lg">
+            <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
+              Visit Website
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </Section>
   );
 }
