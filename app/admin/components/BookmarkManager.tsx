@@ -29,7 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createBookmark, updateBookmark, deleteBookmark, generateContent } from "../actions";
+import {
+  createBookmark,
+  updateBookmark,
+  deleteBookmark,
+  generateContent,
+} from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -58,7 +63,8 @@ export function BookmarkManager({
 }: BookmarkManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewBookmark, setIsNewBookmark] = useState(true);
-  const [selectedBookmark, setSelectedBookmark] = useState<BookmarkWithCategory | null>(null);
+  const [selectedBookmark, setSelectedBookmark] =
+    useState<BookmarkWithCategory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state management
@@ -91,7 +97,9 @@ export function BookmarkManager({
       if (response.error) {
         toast.error(response.error);
       } else {
-        toast.success(isNewBookmark ? "Bookmark created!" : "Bookmark updated!");
+        toast.success(
+          isNewBookmark ? "Bookmark created!" : "Bookmark updated!",
+        );
         setIsDialogOpen(false);
         resetForm();
       }
@@ -262,7 +270,7 @@ export function BookmarkManager({
               <TableCell>
                 <div className="flex items-start gap-2">
                   {bookmark.favicon && (
-                    <Image
+                    <img
                       src={bookmark.favicon}
                       alt={`${bookmark.title} favicon`}
                       width={20}

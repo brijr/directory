@@ -57,7 +57,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       <Link href={`/${bookmark.slug}`} className="space-y-3">
         <div className="flex items-start gap-2">
           {bookmark.favicon && (
-            <Image
+            <img
               src={bookmark.favicon}
               alt={`${bookmark.title} favicon`}
               width={16}
@@ -91,7 +91,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
         {/* Preview Image */}
         {bookmark.ogImage && (
           <div className="relative aspect-video w-full overflow-hidden rounded border">
-            <Image
+            <img
               src={bookmark.ogImage}
               alt={bookmark.title}
               width={400}

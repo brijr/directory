@@ -78,7 +78,7 @@ export default async function Page({ params }: Props) {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             {bookmark.favicon && (
-              <Image
+              <img
                 src={bookmark.favicon}
                 alt={`${bookmark.title} favicon`}
                 width={40}
@@ -128,7 +128,7 @@ export default async function Page({ params }: Props) {
         {/* Preview Image */}
         {bookmark.ogImage && (
           <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-            <Image
+            <img
               src={bookmark.ogImage}
               alt={bookmark.title}
               fill
