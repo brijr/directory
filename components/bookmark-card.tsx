@@ -23,6 +23,7 @@ interface BookmarkCardProps {
     ogImage?: string | null;
     isArchived: boolean;
     isFavorite: boolean;
+    slug: string;
   };
 }
 
@@ -51,7 +52,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       </div>
 
       {/* Card Content */}
-      <Link href={`/${encodeURIComponent(bookmark.url)}`} className="space-y-3">
+      <Link href={`/${bookmark.slug}`} className="space-y-3">
         <div className="flex items-start gap-2">
           {bookmark.favicon && (
             <Image
@@ -106,7 +107,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
           className="w-full"
           asChild
         >
-          <Link href={`/${encodeURIComponent(bookmark.url)}`}>
+          <Link href={`/${bookmark.slug}`}>
             View Details
           </Link>
         </Button>

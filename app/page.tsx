@@ -81,7 +81,8 @@ export default async function Home({
                     excerpt: bookmark.excerpt,
                     ogImage: bookmark.ogImage,
                     isArchived: bookmark.isArchived,
-                    isFavorite: bookmark.isFavorite
+                    isFavorite: bookmark.isFavorite,
+                    slug: bookmark.slug
                   }} 
                 />
               ))}

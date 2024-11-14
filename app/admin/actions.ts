@@ -96,9 +96,23 @@ export async function deleteCategory(prevState: ActionState | null, formData: Fo
 }
 
 // Bookmark Actions
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export async function createBookmark(prevState: ActionState | null, formData: FormData) {
   try {
     const title = formData.get("title") as string;
+    let slug = formData.get("slug") as string;
+    
+    // Generate slug if not provided
+    if (!slug) {
+      slug = generateSlug(title);
+    }
+
     const url = formData.get("url") as string;
     const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
@@ -110,6 +124,7 @@ export async function createBookmark(prevState: ActionState | null, formData: Fo
 
     await db.insert(bookmarks).values({
       title,
+      slug,
       url,
       description,
       categoryId: categoryId === 'none' ? null : categoryId,
@@ -141,6 +156,13 @@ export async function updateBookmark(prevState: ActionState | null, formData: Fo
     }
 
     const title = formData.get("title") as string;
+    let slug = formData.get("slug") as string;
+    
+    // Generate slug if not provided
+    if (!slug) {
+      slug = generateSlug(title);
+    }
+
     const url = formData.get("url") as string;
     const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string;
@@ -154,6 +176,7 @@ export async function updateBookmark(prevState: ActionState | null, formData: Fo
       .update(bookmarks)
       .set({
         title,
+        slug,
         url,
         description,
         categoryId: categoryId === 'none' ? null : categoryId,

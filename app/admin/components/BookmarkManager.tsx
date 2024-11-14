@@ -41,10 +41,18 @@ interface BookmarkManagerProps {
   categories: Category[];
 }
 
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps) {
   const [selectedBookmark, setSelectedBookmark] = useState<(Bookmark & { category: Category | null }) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewBookmark, setIsNewBookmark] = useState(false);
+  const [generatedSlug, setGeneratedSlug] = useState("");
 
   const [createState, createAction] = useFormState(createBookmark, null);
   const [updateState, updateAction] = useFormState(updateBookmark, null);
@@ -86,6 +94,12 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
         toast.error('Failed to delete bookmark');
       }
     }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    const slug = generateSlug(title);
+    setGeneratedSlug(slug);
   };
 
   return (
@@ -205,7 +219,21 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                   id="title"
                   name="title"
                   defaultValue={selectedBookmark?.title}
+                  onChange={handleTitleChange}
                   required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  value={selectedBookmark?.slug || generatedSlug}
+                  pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  title="Lowercase letters, numbers, and hyphens only. No spaces."
+                  placeholder="Generated from title"
+                  readOnly
                 />
               </div>
 
@@ -214,7 +242,6 @@ export function BookmarkManager({ bookmarks, categories }: BookmarkManagerProps)
                 <Input
                   id="url"
                   name="url"
-                  type="url"
                   defaultValue={selectedBookmark?.url}
                   required
                 />

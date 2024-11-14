@@ -45,7 +45,7 @@ export async function getBookmarkById(id: number): Promise<(Bookmark & { categor
   };
 }
 
-export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { category: Category | null }) | null> {
+export async function getBookmarkBySlug(slug: string): Promise<(Bookmark & { category: Category | null }) | null> {
   const results = await db
     .select({
       ...bookmarks,
@@ -53,9 +53,9 @@ export async function getBookmarkBySlug(url: string): Promise<(Bookmark & { cate
     })
     .from(bookmarks)
     .leftJoin(categories, eq(bookmarks.categoryId, categories.id))
-    .where(eq(bookmarks.url, decodeURIComponent(url)))
+    .where(eq(bookmarks.slug, slug))
     .limit(1);
-
+  
   if (results.length === 0) {
     return null;
   }

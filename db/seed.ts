@@ -52,6 +52,7 @@ async function seed() {
     {
       url: "https://github.com",
       title: "GitHub",
+      slug: "github",
       description: "Where the world builds software",
       categoryId: createdCategories[0].id,
       favicon: "https://github.githubassets.com/favicons/favicon.svg",
@@ -62,6 +63,7 @@ async function seed() {
     {
       url: "https://figma.com",
       title: "Figma",
+      slug: "figma",
       description: "The collaborative interface design tool",
       categoryId: createdCategories[1].id,
       favicon: "https://static.figma.com/app/icon/1/favicon.svg",
@@ -72,6 +74,7 @@ async function seed() {
     {
       url: "https://notion.so",
       title: "Notion",
+      slug: "notion",
       description: "All-in-one workspace",
       categoryId: createdCategories[2].id,
       favicon: "https://www.notion.so/images/favicon.ico",
@@ -82,6 +85,7 @@ async function seed() {
     {
       url: "https://www.coursera.org",
       title: "Coursera",
+      slug: "coursera",
       description: "Learn without limits",
       categoryId: createdCategories[3].id,
       favicon: "https://d3njjcbhbojbot.cloudfront.net/web/images/favicons/favicon-v2-96x96.png",
@@ -92,16 +96,18 @@ async function seed() {
     {
       url: "https://react.dev",
       title: "React",
+      slug: "react",
       description: "The library for web and native user interfaces",
       categoryId: createdCategories[0].id,
       favicon: "https://react.dev/favicon.ico",
       ogImage: "https://react.dev/images/og-home.png",
-      excerpt: "React is the library for web and native user interfaces. Build user interfaces out of individual pieces called components written in JavaScript.",
+      excerpt: "React is the library for web and native user interfaces",
       isFavorite: true
     },
     {
       url: "https://dribbble.com",
       title: "Dribbble",
+      slug: "dribbble",
       description: "Discover the world's top designers & creatives",
       categoryId: createdCategories[1].id,
       favicon: "https://cdn.dribbble.com/assets/favicon-b38525134603b9513174ec887944bde1a869eb6cd414f4d640ee48ab2a15a26b.ico",

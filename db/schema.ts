@@ -20,6 +20,7 @@ export const bookmarks = sqliteTable("bookmarks", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   url: text("url").notNull().unique(),
   title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
   description: text("description"),
   
   // Organization

@@ -28,15 +28,10 @@ export default async function AdminPage() {
               <BookmarkManager bookmarks={bookmarks} categories={categories} />
             </Card>
           </TabsContent>
+          
           <TabsContent value="categories">
             <Card className="p-6">
               <CategoryManager categories={categories} />
-            </Card>
-          </TabsContent>
-        
-          <TabsContent value="scraper">
-            <Card className="p-6">
-              <URLScraper />
             </Card>
           </TabsContent>
         </Tabs>
