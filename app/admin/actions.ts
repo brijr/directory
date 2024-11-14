@@ -114,7 +114,8 @@ export async function createBookmark(
   formData: FormData,
 ) {
   try {
-    const { title, description, url, slug } = formData;
+    const { title, description, url } = formData;
+    let slug = formData.get("slug") as string;
 
     // Generate slug if not provided
     if (!slug) {
@@ -172,7 +173,8 @@ export async function updateBookmark(
       return { error: "No bookmark ID provided" };
     }
 
-    const { title, description, url, slug } = formData;
+    const { title, description, url } = formData;
+    let slug = formData.get("slug") as string;
 
     // Generate slug if not provided
     if (!slug) {
