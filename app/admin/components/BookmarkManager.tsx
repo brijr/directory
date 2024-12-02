@@ -45,6 +45,7 @@ import { Loader2 } from "lucide-react";
 import { Upload } from "lucide-react";
 import { Trash2 } from "lucide-react";
 import type { Category, Bookmark } from "@/db/schema";
+import Image from "next/image";
 
 interface BookmarkWithCategory extends Bookmark {
   category: Category | null;
@@ -128,18 +129,16 @@ export function BookmarkManager({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isSaving) return;
     setIsSaving(true);
 
-    const formDataToSubmit = new FormData(e.currentTarget);
-
     try {
-      const response = isNewBookmark
+      const formDataToSubmit = new FormData(e.currentTarget);
+      const result = isNewBookmark
         ? await createBookmark(null, formDataToSubmit)
         : await updateBookmark(null, formDataToSubmit);
 
-      if (response.error) {
-        toast.error(response.error);
+      if (result.error) {
+        toast.error(result.error);
       } else {
         toast.success(
           isNewBookmark ? "Bookmark created!" : "Bookmark updated!",
@@ -147,8 +146,8 @@ export function BookmarkManager({
         setShowSingleUploadDialog(false);
         resetForm();
       }
-    } catch (error) {
-      console.error("Error submitting bookmark:", error);
+    } catch (err) {
+      console.error("Error saving bookmark:", err);
       toast.error("Failed to save bookmark");
     } finally {
       setIsSaving(false);
@@ -190,33 +189,28 @@ export function BookmarkManager({
     }
   }, [showSingleUploadDialog, selectedBookmark]);
 
-  const onEdit = (bookmark: BookmarkWithCategory) => {
+  const handleEdit = (bookmark: BookmarkWithCategory) => {
     setSelectedBookmark(bookmark);
     setIsNewBookmark(false);
     setShowSingleUploadDialog(true);
   };
 
-  const onNew = () => {
+  const handleNew = () => {
     setSelectedBookmark(null);
     setIsNewBookmark(true);
     setShowSingleUploadDialog(true);
   };
 
   const handleDelete = async (bookmark: BookmarkWithCategory) => {
+    setIsDeleting(true);
+    setBookmarkToDelete(bookmark);
+
     try {
-      setIsDeleting(true);
-      const formData = new FormData();
-      formData.append("id", bookmark.id.toString());
-
-      const result = await deleteBookmark(null, formData);
-
-      if (result.success) {
-        toast.success("Bookmark deleted successfully");
-        setBookmarkToDelete(null);
-      } else {
-        toast.error(result.error || "Failed to delete bookmark");
-      }
-    } catch (error) {
+      await deleteBookmark(bookmark.id);
+      toast.success("Bookmark deleted!");
+      setBookmarkToDelete(null);
+    } catch (err) {
+      console.error("Error deleting bookmark:", err);
       toast.error("Failed to delete bookmark");
     } finally {
       setIsDeleting(false);
@@ -268,8 +262,8 @@ export function BookmarkManager({
       }));
 
       toast.success("Content generated successfully!");
-    } catch (error) {
-      console.error("Error generating content:", error);
+    } catch (err) {
+      console.error("Error generating content:", err);
       toast.error("Failed to generate content. Please try again.");
     } finally {
       setIsGenerating(false);
@@ -293,18 +287,21 @@ export function BookmarkManager({
   };
 
   const handleBulkUpload = async (formData: FormData) => {
+    setIsUploading(true);
+
     try {
-      setIsUploading(true);
       const result = await bulkUploadBookmarks(null, formData);
 
       if (result.success) {
         toast.success(result.message);
+        setShowBulkUploadDialog(false);
       } else if (result.error) {
         toast.error(result.error);
       }
 
       setBulkUploadState(result);
-    } catch (error) {
+    } catch (err) {
+      console.error("Error uploading bookmarks:", err);
       toast.error("Failed to upload bookmarks");
     } finally {
       setIsUploading(false);
@@ -393,7 +390,7 @@ export function BookmarkManager({
           >
             <DialogTrigger asChild>
               <Button
-                onClick={() => setShowSingleUploadDialog(true)}
+                onClick={handleNew}
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
@@ -566,9 +563,9 @@ export function BookmarkManager({
                     <div className="space-y-2">
                       <Label htmlFor="favicon">Favicon URL</Label>
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           src={formData.favicon || "/favicon.ico"}
-                          alt=""
+                          alt="Favicon"
                           width={20}
                           height={20}
                           className="h-5 w-5 rounded-sm"
@@ -604,10 +601,11 @@ export function BookmarkManager({
                           }
                         />
                         <div className="relative aspect-video w-full overflow-hidden rounded-md border">
-                          <img
+                          <Image
                             src={formData.ogImage || "/placeholder.jpg"}
-                            alt=""
-                            className="h-full w-full object-cover"
+                            alt="OG Image"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       </div>
@@ -726,9 +724,9 @@ export function BookmarkManager({
             <TableRow key={bookmark.id}>
               <TableCell>
                 <div className="flex items-start gap-2">
-                  <img
+                  <Image
                     src={bookmark.favicon || "/favicon.ico"}
-                    alt=""
+                    alt="Favicon"
                     width={20}
                     height={20}
                     className="mt-1 h-5 w-5 rounded-sm"
@@ -778,7 +776,7 @@ export function BookmarkManager({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(bookmark)}
+                    onClick={() => handleEdit(bookmark)}
                   >
                     Edit
                   </Button>

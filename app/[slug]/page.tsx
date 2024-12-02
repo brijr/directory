@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 
 // Metadata
 import { Metadata, ResolvingMetadata } from "next";
+import Markdown from "react-markdown";
 
 type Props = {
   params: { slug: string };
@@ -116,10 +117,7 @@ export default async function Page({ params }: Props) {
           <div className="prose prose-gray max-w-none dark:prose-invert">
             <div className="rounded-lg bg-accent/50 p-6">
               <h2 className="mt-0 text-xl font-semibold">Overview</h2>
-              <div
-                className="mt-4"
-                dangerouslySetInnerHTML={{ __html: bookmark.overview }}
-              />
+              <Markdown>{bookmark.overview}</Markdown>
             </div>
           </div>
         )}
