@@ -1,46 +1,114 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Bookmark } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { Star, Archive, ExternalLink } from "lucide-react";
+import { Button } from "./ui/button";
 
-export const BookmarkCard = ({ bookmark }: { bookmark: Bookmark }) => {
+interface BookmarkCardProps {
+  bookmark: {
+    id: number;
+    url: string;
+    title: string;
+    description?: string | null;
+    category?: {
+      id: string;
+      name: string;
+      color?: string;
+      icon?: string;
+    };
+    favicon?: string | null;
+    overview?: string | null;
+    ogImage?: string | null;
+    isArchived: boolean;
+    isFavorite: boolean;
+    slug: string;
+  };
+}
+
+export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
   return (
-    <Link
-      href={bookmark.slug ?? "/"}
+    <div
       className={cn(
-        "not-prose group grid gap-2",
+        "not-prose group relative grid gap-2 rounded-md",
         "border bg-accent/50 p-1.5",
         "transition-all hover:bg-accent",
+        bookmark.isArchived && "opacity-60",
       )}
     >
-      <Image
-        src={bookmark.screenshot_url ?? "/placeholder.jpg"}
-        width={590.66}
-        height={333.98}
-        alt={bookmark.name ?? "Design Engineer Resource"}
-        className="border"
-      />
-      <div className="flex flex-col gap-3 px-1 pb-1 pt-1">
-        <div className="grid grid-cols-[1fr_auto] items-start justify-between gap-2">
-          <h3
-            className={cn(
-              "underline-offset-4 group-hover:underline",
-              "decoration-foreground/50 decoration-dotted",
-              "text-base leading-snug",
-              "min-w-0 flex-1 overflow-hidden truncate",
-            )}
+      {/* Status Icons */}
+      <div className="absolute right-2 top-2 flex gap-1">
+        {bookmark.isFavorite && (
+          <Badge
+            variant="secondary"
+            className="bg-yellow-500/10 text-yellow-500"
           >
-            {bookmark.name}
-          </h3>
-          <Badge variant="outline" className="bg-background">
-            {bookmark.category}
+            <Star className="h-3 w-3" />
           </Badge>
-        </div>
-        <p className="line-clamp-2 max-w-full text-xs text-muted-foreground">
-          {bookmark.description}
-        </p>
+        )}
+        {bookmark.isArchived && (
+          <Badge variant="secondary" className="bg-gray-500/10 text-gray-500">
+            <Archive className="h-3 w-3" />
+          </Badge>
+        )}
       </div>
-    </Link>
+
+      {/* Card Content */}
+      <Link href={`/${bookmark.slug}`} className="space-y-3">
+        {/* Preview Image */}
+        <div className="relative aspect-video w-full overflow-hidden rounded border">
+          <img
+            src={bookmark.ogImage || "/placeholder.jpg"}
+            alt={bookmark.title}
+            width={400}
+            height={200}
+            className="aspect-video w-full rounded-lg object-cover"
+          />
+        </div>
+
+        {/* Title and Description */}
+        <div className="flex items-start gap-2">
+          <img
+            src={bookmark.favicon || "/favicon.ico"}
+            alt=""
+            width={16}
+            height={16}
+            className="h-4 w-4"
+          />
+          <div className="space-y-1">
+            <h2 className="font-medium leading-tight">{bookmark.title}</h2>
+            {bookmark.description && (
+              <p className="line-clamp-2 text-sm text-muted-foreground">
+                {bookmark.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Category Badge */}
+        {bookmark.category && (
+          <Badge
+            style={{
+              backgroundColor: bookmark.category.color,
+              color: "white",
+            }}
+            className="w-fit"
+          >
+            {bookmark.category.icon} {bookmark.category.name}
+          </Badge>
+        )}
+      </Link>
+
+      {/* Action Buttons */}
+      <div className="mt-2 flex gap-2">
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/${bookmark.slug}`}>View Details</Link>
+        </Button>
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
+            Visit Site <ExternalLink className="ml-2 h-3 w-3" />
+          </Link>
+        </Button>
+      </div>
+    </div>
   );
 };
