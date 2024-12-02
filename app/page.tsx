@@ -24,8 +24,10 @@ export default async function Home({
   ]);
 
   const filteredBookmarks = bookmarks
-    .filter((bookmark) => 
-      !searchParams.category || bookmark.category?.id.toString() === searchParams.category
+    .filter(
+      (bookmark) =>
+        !searchParams.category ||
+        bookmark.category?.id.toString() === searchParams.category,
     )
     .filter((bookmark) => {
       if (!searchParams.search) return true;
@@ -52,47 +54,50 @@ export default async function Home({
             <SearchResultsCounter totalResults={filteredBookmarks.length} />
 
             <Suspense fallback={<div>Loading categories...</div>}>
-              <CategoryFilter 
-                categories={categories.map(cat => ({
+              <CategoryFilter
+                categories={categories.map((cat) => ({
                   id: cat.id.toString(),
                   name: cat.name,
                   color: cat.color || undefined,
-                  icon: cat.icon || undefined
-                }))} 
+                  icon: cat.icon || undefined,
+                }))}
               />
             </Suspense>
 
             <BookmarkGrid>
               {filteredBookmarks.map((bookmark) => (
-                <BookmarkCard 
-                  key={bookmark.id} 
+                <BookmarkCard
+                  key={bookmark.id}
                   bookmark={{
                     id: bookmark.id,
                     url: bookmark.url,
                     title: bookmark.title,
                     description: bookmark.description,
-                    category: bookmark.category ? {
-                      id: bookmark.category.id.toString(),
-                      name: bookmark.category.name,
-                      color: bookmark.category.color || undefined,
-                      icon: bookmark.category.icon || undefined
-                    } : undefined,
+                    category: bookmark.category
+                      ? {
+                          id: bookmark.category.id.toString(),
+                          name: bookmark.category.name,
+                          color: bookmark.category.color || undefined,
+                          icon: bookmark.category.icon || undefined,
+                        }
+                      : undefined,
                     favicon: bookmark.favicon,
                     overview: bookmark.overview,
                     ogImage: bookmark.ogImage,
                     isArchived: bookmark.isArchived,
                     isFavorite: bookmark.isFavorite,
-                    slug: bookmark.slug
-                  }} 
+                    slug: bookmark.slug,
+                  }}
                 />
               ))}
             </BookmarkGrid>
 
             {filteredBookmarks.length === 0 && (
-              <div className="text-center text-gray-500 py-8">
+              <div className="py-8 text-center text-gray-500">
                 No bookmarks found
                 {searchParams.search && ` matching "${searchParams.search}"`}
-                {searchParams.category && ` in category "${categories.find(c => c.id.toString() === searchParams.category)?.name}"`}
+                {searchParams.category &&
+                  ` in category "${categories.find((c) => c.id.toString() === searchParams.category)?.name}"`}
               </div>
             )}
           </div>
