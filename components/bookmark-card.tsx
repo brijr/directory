@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Star, Archive, ExternalLink } from "lucide-react";
@@ -56,18 +57,17 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       <Link href={`/${bookmark.slug}`} className="space-y-3">
         {/* Preview Image */}
         <div className="relative aspect-video w-full overflow-hidden rounded border">
-          <img
+          <Image
             src={bookmark.ogImage || "/placeholder.jpg"}
             alt={bookmark.title}
-            width={400}
-            height={200}
-            className="aspect-video w-full rounded-lg object-cover"
+            fill
+            className="object-cover"
           />
         </div>
 
         {/* Title and Description */}
         <div className="flex items-start gap-2">
-          <img
+          <Image
             src={bookmark.favicon || "/favicon.ico"}
             alt=""
             width={16}

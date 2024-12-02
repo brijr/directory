@@ -206,9 +206,16 @@ export function BookmarkManager({
     setBookmarkToDelete(bookmark);
 
     try {
-      await deleteBookmark(bookmark.id);
-      toast.success("Bookmark deleted!");
-      setBookmarkToDelete(null);
+      const formData = new FormData();
+      formData.append("id", bookmark.id.toString());
+      const result = await deleteBookmark(null, formData);
+
+      if (result.success) {
+        toast.success("Bookmark deleted!");
+        setBookmarkToDelete(null);
+      } else {
+        toast.error(result.error || "Failed to delete bookmark");
+      }
     } catch (err) {
       console.error("Error deleting bookmark:", err);
       toast.error("Failed to delete bookmark");
@@ -680,7 +687,7 @@ export function BookmarkManager({
           <DialogHeader>
             <DialogTitle>Delete Bookmark</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{bookmarkToDelete?.title}"? This
+              Are you sure you want to delete &ldquo;{bookmarkToDelete?.title}&rdquo;? This
               action cannot be undone.
             </DialogDescription>
           </DialogHeader>

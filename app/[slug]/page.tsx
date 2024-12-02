@@ -1,6 +1,7 @@
 // Next Imports
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Balancer from "react-wrap-balancer";
 
 // Database Imports
@@ -76,14 +77,14 @@ export default async function Page({ params }: Props) {
 
         {/* Header */}
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {bookmark.favicon && (
-              <img
-                src={bookmark.favicon}
-                alt={`${bookmark.title} favicon`}
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-lg"
+              <Image
+                src={bookmark.favicon || "/favicon.ico"}
+                alt="Favicon"
+                width={24}
+                height={24}
+                className="h-6 w-6 rounded-sm"
               />
             )}
             <div className="space-y-1">
@@ -125,9 +126,10 @@ export default async function Page({ params }: Props) {
         {/* Preview Image */}
         {bookmark.ogImage && (
           <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-            <img
-              src={bookmark.ogImage}
-              alt={bookmark.title}
+            <Image
+              src={bookmark.ogImage || "/placeholder.jpg"}
+              alt="OG Image"
+              fill
               className="object-cover"
             />
           </div>
