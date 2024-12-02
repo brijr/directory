@@ -66,6 +66,8 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
             />
           </div>
         )}
+
+        {/* Title and Description */}
         <div className="flex items-start gap-2">
           {bookmark.favicon && (
             <img
@@ -76,6 +78,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
               className="h-4 w-4"
             />
           )}
+
           <div className="space-y-1">
             <h2 className="font-medium leading-tight">{bookmark.title}</h2>
             {bookmark.description && (
