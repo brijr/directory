@@ -6,9 +6,16 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import Exa from "exa-js";
 
-interface ActionState {
+export interface ActionState {
   success?: boolean;
   error?: string;
+  message?: string;
+  progress?: {
+    current: number;
+    total: number;
+    currentUrl?: string;
+    lastAdded?: string;
+  };
 }
 
 interface ScrapeResult {
@@ -25,7 +32,7 @@ interface ScrapeResult {
 export async function createCategory(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
@@ -55,7 +62,7 @@ export async function createCategory(
 export async function updateCategory(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
@@ -96,7 +103,7 @@ export async function updateCategory(
 export async function deleteCategory(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
@@ -131,7 +138,7 @@ function generateSlug(title: string): string {
 export async function createBookmark(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -177,7 +184,7 @@ export async function createBookmark(
 export async function updateBookmark(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
@@ -235,7 +242,7 @@ export async function updateBookmark(
 export async function deleteBookmark(
   prevState: ActionState | null,
   formData: FormData,
-) {
+): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
@@ -258,6 +265,100 @@ export async function deleteBookmark(
   } catch (err) {
     console.error("Error deleting bookmark:", err);
     return { error: "Failed to delete bookmark" };
+  }
+}
+
+export async function bulkUploadBookmarks(
+  prevState: ActionState | null,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const file = formData.get("file") as File;
+    if (!file) {
+      return { error: "No file provided" };
+    }
+
+    const text = await file.text();
+    const rows = text.split("\n").map(row => row.trim()).filter(row => row);
+    
+    // Skip header row if it exists
+    const urls = rows[0].toLowerCase().includes("url") ? rows.slice(1) : rows;
+    
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      try {
+        if (!url) continue;
+
+        // Return progress update
+        const progress = {
+          current: i + 1,
+          total: urls.length,
+          currentUrl: url.trim(),
+        };
+
+        // Generate content for the URL
+        const content = await generateContent(url.trim(), null);
+        
+        // Create the bookmark
+        await db.insert(bookmarks).values({
+          title: content.title,
+          slug: content.slug,
+          url: url.trim(),
+          description: content.description,
+          overview: content.overview,
+          favicon: content.favicon,
+          ogImage: content.ogImage,
+          search_results: content.search_results,
+          categoryId: null,
+          isFavorite: false,
+          isArchived: false,
+        });
+
+        successCount++;
+        
+        // Return success state with progress
+        return { 
+          success: true,
+          progress: {
+            ...progress,
+            lastAdded: content.title
+          },
+          message: `Processing ${i + 1} of ${urls.length}: ${content.title}`
+        };
+
+      } catch (err) {
+        console.error(`Error processing URL: ${url}`, err);
+        errorCount++;
+        
+        // Return error state with progress
+        return { 
+          error: `Failed to process ${url}`,
+          progress: {
+            current: i + 1,
+            total: urls.length,
+            currentUrl: url.trim()
+          }
+        };
+      }
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+
+    return { 
+      success: true, 
+      message: `Successfully imported ${successCount} bookmarks. ${errorCount > 0 ? `Failed to import ${errorCount} URLs.` : ""}`,
+      progress: {
+        current: urls.length,
+        total: urls.length
+      }
+    };
+  } catch (err) {
+    console.error("Error bulk uploading bookmarks:", err);
+    return { error: "Failed to process bulk upload" };
   }
 }
 
@@ -301,7 +402,16 @@ export async function scrapeUrl(
 export async function generateContent(
   url: string,
   searchResults: string | null,
-) {
+): Promise<{
+  title: string;
+  description: string;
+  url: string;
+  overview: string;
+  search_results: string | null;
+  favicon: string;
+  ogImage: string;
+  slug: string;
+}> {
   try {
     // Step 1: Get metadata from our API
     const baseUrl = process.env.VERCEL_URL

@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -33,11 +35,15 @@ import {
   updateBookmark,
   deleteBookmark,
   generateContent,
+  bulkUploadBookmarks,
+  type ActionState,
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
+import { Upload } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { Category, Bookmark } from "@/db/schema";
 
 interface BookmarkWithCategory extends Bookmark {
@@ -66,6 +72,40 @@ export function BookmarkManager({
     useState<BookmarkWithCategory | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [bulkUploadState, setBulkUploadState] = useState<ActionState | null>(
+    null,
+  );
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [bookmarkToDelete, setBookmarkToDelete] =
+    useState<BookmarkWithCategory | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (bulkUploadState?.success) {
+      if (
+        bulkUploadState.progress?.current === bulkUploadState.progress?.total
+      ) {
+        toast.success(
+          bulkUploadState.message || "Bookmarks uploaded successfully",
+        );
+        setIsUploading(false);
+        setIsDialogOpen(false);
+        setBulkUploadState(null);
+      } else if (bulkUploadState.progress?.lastAdded) {
+        toast.success(`Added: ${bulkUploadState.progress.lastAdded}`);
+      }
+    } else if (bulkUploadState?.error) {
+      toast.error(bulkUploadState.error);
+      if (
+        !bulkUploadState.progress ||
+        bulkUploadState.progress.current === bulkUploadState.progress.total
+      ) {
+        setIsUploading(false);
+      }
+    }
+  }, [bulkUploadState]);
 
   // Form state management
   const [formData, setFormData] = useState({
@@ -159,23 +199,24 @@ export function BookmarkManager({
     setIsDialogOpen(true);
   };
 
-  const onDelete = async (bookmark: BookmarkWithCategory) => {
-    if (window.confirm("Are you sure you want to delete this bookmark?")) {
-      setIsSaving(true);
+  const handleDelete = async (bookmark: BookmarkWithCategory) => {
+    try {
+      setIsDeleting(true);
       const formData = new FormData();
       formData.append("id", bookmark.id.toString());
 
-      try {
-        await deleteBookmark(null, formData);
+      const result = await deleteBookmark(null, formData);
+
+      if (result.success) {
         toast.success("Bookmark deleted successfully");
-        setIsDialogOpen(false);
-        resetForm();
-      } catch (err) {
-        console.error("Error deleting bookmark:", err);
-        toast.error("Failed to delete bookmark");
-      } finally {
-        setIsSaving(false);
+        setBookmarkToDelete(null);
+      } else {
+        toast.error(result.error || "Failed to delete bookmark");
       }
+    } catch (error) {
+      toast.error("Failed to delete bookmark");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -248,6 +289,17 @@ export function BookmarkManager({
     });
   };
 
+  const handleBulkUpload = async (formData: FormData) => {
+    try {
+      setIsUploading(true);
+      const result = await bulkUploadBookmarks(null, formData);
+      setBulkUploadState(result);
+    } catch (error) {
+      toast.error("Failed to upload bookmarks");
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -256,12 +308,132 @@ export function BookmarkManager({
           <div className="text-sm text-muted-foreground">
             {bookmarks.length} bookmarks
           </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Bulk Upload
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Bulk Upload Bookmarks</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleBulkUpload(new FormData(e.currentTarget));
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <Label htmlFor="file">Upload CSV File</Label>
+                  <Input
+                    id="file"
+                    name="file"
+                    type="file"
+                    accept=".csv,text/csv"
+                    required
+                    disabled={isUploading}
+                  />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Upload a CSV file with a list of URLs (one per line). The
+                    first row can optionally contain a header.
+                  </p>
+                </div>
+                {isUploading && bulkUploadState?.progress && (
+                  <div className="space-y-2">
+                    <div className="h-2 w-full rounded-full bg-secondary">
+                      <div
+                        className="h-2 rounded-full bg-primary transition-all duration-300"
+                        style={{
+                          width: `${(bulkUploadState.progress.current / bulkUploadState.progress.total) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>
+                        Processing {bulkUploadState.progress.current} of{" "}
+                        {bulkUploadState.progress.total}
+                      </span>
+                      <span>
+                        {Math.round(
+                          (bulkUploadState.progress.current /
+                            bulkUploadState.progress.total) *
+                            100,
+                        )}
+                        %
+                      </span>
+                    </div>
+                    {bulkUploadState.progress.currentUrl && (
+                      <p className="truncate text-sm text-muted-foreground">
+                        Current: {bulkUploadState.progress.currentUrl}
+                      </p>
+                    )}
+                    {bulkUploadState.progress.lastAdded && (
+                      <p className="truncate text-sm text-primary">
+                        Last Added: {bulkUploadState.progress.lastAdded}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <Button type="submit" disabled={isUploading}>
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    "Upload and Process"
+                  )}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
           <Button onClick={onNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Bookmark
           </Button>
         </div>
       </div>
+
+      <Dialog
+        open={!!bookmarkToDelete}
+        onOpenChange={(open) => !open && setBookmarkToDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Bookmark</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{bookmarkToDelete?.title}"? This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBookmarkToDelete(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => bookmarkToDelete && handleDelete(bookmarkToDelete)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Table>
         <TableHeader>
@@ -334,12 +506,12 @@ export function BookmarkManager({
                     Edit
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDelete(bookmark)}
-                    className="text-red-500 hover:text-red-600"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setBookmarkToDelete(bookmark)}
+                    className="text-destructive hover:text-destructive/90"
                   >
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </TableCell>
