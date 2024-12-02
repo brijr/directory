@@ -140,23 +140,22 @@ export async function createBookmark(
     const overview = formData.get("overview") as string;
     const favicon = formData.get("favicon") as string;
     const ogImage = formData.get("ogImage") as string;
+    const search_results = formData.get("search_results") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const isFavorite = formData.get("isFavorite") === "true";
+    const isArchived = formData.get("isArchived") === "true";
 
     // Generate slug if not provided
     if (!slug) {
       slug = generateSlug(title);
     }
 
-    const categoryId = formData.get("categoryId") as string;
-    const search_results = formData.get("search_results") as string;
-    const isFavorite = formData.get("isFavorite") === "true";
-    const isArchived = formData.get("isArchived") === "true";
-
     await db.insert(bookmarks).values({
       title,
       slug,
       url,
       description,
-      categoryId: categoryId || null,
+      categoryId: categoryId === "none" ? null : categoryId,
       search_results: search_results || null,
       isFavorite,
       isArchived,
@@ -167,7 +166,6 @@ export async function createBookmark(
 
     revalidatePath("/admin");
     revalidatePath("/");
-    revalidatePath(`/${encodeURIComponent(url)}`);
 
     return { success: true };
   } catch (err) {
@@ -197,14 +195,15 @@ export async function updateBookmark(
     const overview = formData.get("overview") as string;
     const favicon = formData.get("favicon") as string;
     const ogImage = formData.get("ogImage") as string;
+    const search_results = formData.get("search_results") as string;
+    const categoryId = formData.get("categoryId") as string;
+    const isFavorite = formData.get("isFavorite") === "true";
+    const isArchived = formData.get("isArchived") === "true";
 
     // Generate slug if not provided
     if (!slug) {
       slug = generateSlug(title);
     }
-
-    const categoryId = formData.get("categoryId") as string;
-    const search_results = formData.get("search_results") as string;
 
     await db
       .update(bookmarks)
@@ -213,17 +212,18 @@ export async function updateBookmark(
         slug,
         url,
         description,
-        categoryId: categoryId || null,
+        categoryId: categoryId === "none" ? null : categoryId,
         search_results: search_results || null,
         overview,
         favicon,
         ogImage,
+        isFavorite,
+        isArchived,
       })
       .where(eq(bookmarks.id, Number(id)));
 
     revalidatePath("/admin");
     revalidatePath("/");
-    revalidatePath(`/${encodeURIComponent(url)}`);
 
     return { success: true };
   } catch (err) {
