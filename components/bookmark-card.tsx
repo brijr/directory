@@ -29,7 +29,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
   return (
     <div
       className={cn(
-        "not-prose group relative grid gap-2",
+        "not-prose group relative grid gap-2 rounded-md",
         "border bg-accent/50 p-1.5",
         "transition-all hover:bg-accent",
         bookmark.isArchived && "opacity-60",
@@ -54,6 +54,18 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
 
       {/* Card Content */}
       <Link href={`/${bookmark.slug}`} className="space-y-3">
+        {/* Preview Image */}
+        {bookmark.ogImage && (
+          <div className="relative aspect-video w-full overflow-hidden rounded border">
+            <img
+              src={bookmark.ogImage}
+              alt={bookmark.title}
+              width={400}
+              height={200}
+              className="aspect-video w-full rounded-lg object-cover"
+            />
+          </div>
+        )}
         <div className="flex items-start gap-2">
           {bookmark.favicon && (
             <img
@@ -85,19 +97,6 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
           >
             {bookmark.category.icon} {bookmark.category.name}
           </Badge>
-        )}
-
-        {/* Preview Image */}
-        {bookmark.ogImage && (
-          <div className="relative aspect-video w-full overflow-hidden rounded border">
-            <img
-              src={bookmark.ogImage}
-              alt={bookmark.title}
-              width={400}
-              height={200}
-              className="aspect-video w-full rounded-lg object-cover"
-            />
-          </div>
         )}
       </Link>
 
