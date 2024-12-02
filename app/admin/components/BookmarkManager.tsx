@@ -253,13 +253,13 @@ export function BookmarkManager({
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Manage Bookmarks</h2>
         <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
+            {bookmarks.length} bookmarks
+          </div>
           <Button onClick={onNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Bookmark
           </Button>
-          <div className="text-sm text-muted-foreground">
-            {bookmarks.length} bookmarks
-          </div>
         </div>
       </div>
 
