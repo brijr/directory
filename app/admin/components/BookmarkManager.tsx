@@ -396,10 +396,7 @@ export function BookmarkManager({
             onOpenChange={setShowSingleUploadDialog}
           >
             <DialogTrigger asChild>
-              <Button
-                onClick={handleNew}
-                className="flex items-center gap-2"
-              >
+              <Button onClick={handleNew} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 New Bookmark
               </Button>
@@ -687,8 +684,8 @@ export function BookmarkManager({
           <DialogHeader>
             <DialogTitle>Delete Bookmark</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &ldquo;{bookmarkToDelete?.title}&rdquo;? This
-              action cannot be undone.
+              Are you sure you want to delete &ldquo;{bookmarkToDelete?.title}
+              &rdquo;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
