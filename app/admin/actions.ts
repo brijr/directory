@@ -268,6 +268,9 @@ export async function deleteBookmark(
   }
 }
 
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function bulkUploadBookmarks(
   prevState: ActionState | null,
   formData: FormData,
@@ -286,27 +289,27 @@ export async function bulkUploadBookmarks(
     
     let successCount = 0;
     let errorCount = 0;
+    let lastAddedTitle = "";
 
+    // Process URLs sequentially with delay
     for (let i = 0; i < urls.length; i++) {
-      const url = urls[i];
-      try {
-        if (!url) continue;
+      const url = urls[i].trim();
+      if (!url) continue;
 
-        // Return progress update
-        const progress = {
-          current: i + 1,
-          total: urls.length,
-          currentUrl: url.trim(),
-        };
+      try {
+        // Add a 2-second delay between each request to avoid rate limits
+        if (i > 0) {
+          await delay(2000);
+        }
 
         // Generate content for the URL
-        const content = await generateContent(url.trim(), null);
+        const content = await generateContent(url, null);
         
         // Create the bookmark
         await db.insert(bookmarks).values({
           title: content.title,
           slug: content.slug,
-          url: url.trim(),
+          url: url,
           description: content.description,
           overview: content.overview,
           favicon: content.favicon,
@@ -318,42 +321,34 @@ export async function bulkUploadBookmarks(
         });
 
         successCount++;
-        
-        // Return success state with progress
-        return { 
-          success: true,
-          progress: {
-            ...progress,
-            lastAdded: content.title
-          },
-          message: `Processing ${i + 1} of ${urls.length}: ${content.title}`
-        };
+        lastAddedTitle = content.title;
+
+        // Revalidate after each successful addition
+        revalidatePath("/admin");
+        revalidatePath("/");
 
       } catch (err) {
         console.error(`Error processing URL: ${url}`, err);
-        errorCount++;
         
-        // Return error state with progress
-        return { 
-          error: `Failed to process ${url}`,
-          progress: {
-            current: i + 1,
-            total: urls.length,
-            currentUrl: url.trim()
-          }
-        };
+        // Check if it's a rate limit error
+        if (err instanceof Error && err.message.includes('rate limit')) {
+          // Wait for 10 seconds before retrying
+          await delay(10000);
+          i--; // Retry the same URL
+          continue;
+        }
+        
+        errorCount++;
       }
     }
-
-    revalidatePath("/admin");
-    revalidatePath("/");
 
     return { 
       success: true, 
       message: `Successfully imported ${successCount} bookmarks. ${errorCount > 0 ? `Failed to import ${errorCount} URLs.` : ""}`,
       progress: {
         current: urls.length,
-        total: urls.length
+        total: urls.length,
+        lastAdded: lastAddedTitle
       }
     };
   } catch (err) {

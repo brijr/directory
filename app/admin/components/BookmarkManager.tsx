@@ -293,9 +293,17 @@ export function BookmarkManager({
     try {
       setIsUploading(true);
       const result = await bulkUploadBookmarks(null, formData);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else if (result.error) {
+        toast.error(result.error);
+      }
+
       setBulkUploadState(result);
     } catch (error) {
       toast.error("Failed to upload bookmarks");
+    } finally {
       setIsUploading(false);
     }
   };
@@ -308,7 +316,7 @@ export function BookmarkManager({
           <div className="text-sm text-muted-foreground">
             {bookmarks.length} bookmarks
           </div>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
@@ -318,6 +326,10 @@ export function BookmarkManager({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Bulk Upload Bookmarks</DialogTitle>
+                <DialogDescription>
+                  Upload a CSV file with a list of URLs to import. Each URL will
+                  be processed with a short delay to avoid rate limits.
+                </DialogDescription>
               </DialogHeader>
               <form
                 onSubmit={(e) => {
@@ -341,40 +353,15 @@ export function BookmarkManager({
                     first row can optionally contain a header.
                   </p>
                 </div>
-                {isUploading && bulkUploadState?.progress && (
+                {isUploading && (
                   <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full bg-secondary">
-                      <div
-                        className="h-2 rounded-full bg-primary transition-all duration-300"
-                        style={{
-                          width: `${(bulkUploadState.progress.current / bulkUploadState.progress.total) * 100}%`,
-                        }}
-                      />
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Processing URLs...</span>
                     </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>
-                        Processing {bulkUploadState.progress.current} of{" "}
-                        {bulkUploadState.progress.total}
-                      </span>
-                      <span>
-                        {Math.round(
-                          (bulkUploadState.progress.current /
-                            bulkUploadState.progress.total) *
-                            100,
-                        )}
-                        %
-                      </span>
-                    </div>
-                    {bulkUploadState.progress.currentUrl && (
-                      <p className="truncate text-sm text-muted-foreground">
-                        Current: {bulkUploadState.progress.currentUrl}
-                      </p>
-                    )}
-                    {bulkUploadState.progress.lastAdded && (
-                      <p className="truncate text-sm text-primary">
-                        Last Added: {bulkUploadState.progress.lastAdded}
-                      </p>
-                    )}
+                    <p className="text-sm text-muted-foreground">
+                      This may take a while. Please keep this window open.
+                    </p>
                   </div>
                 )}
                 <Button type="submit" disabled={isUploading}>
