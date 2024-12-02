@@ -415,15 +415,36 @@ export function BookmarkManager({
 
               <div>
                 <Label htmlFor="slug">Slug</Label>
-                <Input
-                  id="slug"
-                  name="slug"
-                  value={formData.slug}
-                  pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
-                  title="Lowercase letters, numbers, and hyphens only. No spaces."
-                  placeholder="Generated from title"
-                  readOnly
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        slug: e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, "-")
+                          .replace(/^-+|-+$/g, ""),
+                      }))
+                    }
+                    pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                    title="Lowercase letters, numbers, and hyphens only. No spaces."
+                    placeholder="my-custom-slug"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const newSlug = generateSlug(formData.title);
+                      setFormData((prev) => ({ ...prev, slug: newSlug }));
+                    }}
+                    className="shrink-0"
+                  >
+                    Generate from Title
+                  </Button>
+                </div>
               </div>
 
               <div>
