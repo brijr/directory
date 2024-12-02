@@ -66,10 +66,6 @@ export function BookmarkManager({
   bookmarks,
   categories,
 }: BookmarkManagerProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isNewBookmark, setIsNewBookmark] = useState(true);
-  const [selectedBookmark, setSelectedBookmark] =
-    useState<BookmarkWithCategory | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -82,6 +78,13 @@ export function BookmarkManager({
     useState<BookmarkWithCategory | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [showSingleUploadDialog, setShowSingleUploadDialog] = useState(false);
+  const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false);
+
+  const [selectedBookmark, setSelectedBookmark] =
+    useState<BookmarkWithCategory | null>(null);
+  const [isNewBookmark, setIsNewBookmark] = useState(true);
+
   useEffect(() => {
     if (bulkUploadState?.success) {
       if (
@@ -91,7 +94,7 @@ export function BookmarkManager({
           bulkUploadState.message || "Bookmarks uploaded successfully",
         );
         setIsUploading(false);
-        setIsDialogOpen(false);
+        setShowBulkUploadDialog(false);
         setBulkUploadState(null);
       } else if (bulkUploadState.progress?.lastAdded) {
         toast.success(`Added: ${bulkUploadState.progress.lastAdded}`);
@@ -141,7 +144,7 @@ export function BookmarkManager({
         toast.success(
           isNewBookmark ? "Bookmark created!" : "Bookmark updated!",
         );
-        setIsDialogOpen(false);
+        setShowSingleUploadDialog(false);
         resetForm();
       }
     } catch (error) {
@@ -154,7 +157,7 @@ export function BookmarkManager({
 
   // Reset form when dialog opens/closes
   useEffect(() => {
-    if (isDialogOpen) {
+    if (showSingleUploadDialog) {
       if (selectedBookmark) {
         setFormData({
           title: selectedBookmark.title,
@@ -185,18 +188,18 @@ export function BookmarkManager({
         });
       }
     }
-  }, [isDialogOpen, selectedBookmark]);
+  }, [showSingleUploadDialog, selectedBookmark]);
 
   const onEdit = (bookmark: BookmarkWithCategory) => {
     setSelectedBookmark(bookmark);
     setIsNewBookmark(false);
-    setIsDialogOpen(true);
+    setShowSingleUploadDialog(true);
   };
 
   const onNew = () => {
     setSelectedBookmark(null);
     setIsNewBookmark(true);
-    setIsDialogOpen(true);
+    setShowSingleUploadDialog(true);
   };
 
   const handleDelete = async (bookmark: BookmarkWithCategory) => {
@@ -316,7 +319,12 @@ export function BookmarkManager({
           <div className="text-sm text-muted-foreground">
             {bookmarks.length} bookmarks
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+
+          {/* Bulk Upload Dialog */}
+          <Dialog
+            open={showBulkUploadDialog}
+            onOpenChange={setShowBulkUploadDialog}
+          >
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
@@ -377,10 +385,292 @@ export function BookmarkManager({
               </form>
             </DialogContent>
           </Dialog>
-          <Button onClick={onNew} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Bookmark
-          </Button>
+
+          {/* Single Upload Dialog */}
+          <Dialog
+            open={showSingleUploadDialog}
+            onOpenChange={setShowSingleUploadDialog}
+          >
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setShowSingleUploadDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Bookmark
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {isNewBookmark ? "New Bookmark" : "Edit Bookmark"}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isNewBookmark && selectedBookmark && (
+                  <input
+                    type="hidden"
+                    name="id"
+                    value={selectedBookmark.id.toString()}
+                  />
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="url">URL</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="url"
+                        name="url"
+                        type="url"
+                        value={formData.url}
+                        onChange={handleUrlChange}
+                        placeholder="https://example.com"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isGenerating}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const form = e.currentTarget.closest("form");
+                          if (form) {
+                            handleGenerateContent(new FormData(form));
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          "Generate Content"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleTitleChange}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="slug">Slug</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="slug"
+                        name="slug"
+                        value={formData.slug}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            slug: e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, "-")
+                              .replace(/^-+|-+$/g, ""),
+                          }))
+                        }
+                        pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                        title="Lowercase letters, numbers, and hyphens only. No spaces."
+                        placeholder="my-custom-slug"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const newSlug = generateSlug(formData.title);
+                          setFormData((prev) => ({ ...prev, slug: newSlug }));
+                        }}
+                        className="shrink-0"
+                      >
+                        Generate from Title
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="overview">Overview</Label>
+                    <Textarea
+                      id="overview"
+                      name="overview"
+                      value={formData.overview}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          overview: e.target.value,
+                        }))
+                      }
+                      className="min-h-[100px]"
+                    />
+                  </div>
+
+                  <Input
+                    type="hidden"
+                    name="search_results"
+                    value={formData.search_results}
+                  />
+
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="categoryId">Category</Label>
+                    <Select
+                      name="categoryId"
+                      value={formData.categoryId}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, categoryId: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem
+                            key={category.id}
+                            value={category.id.toString()}
+                          >
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="favicon">Favicon URL</Label>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={formData.favicon || "/favicon.ico"}
+                          alt=""
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 rounded-sm"
+                        />
+                        <Input
+                          id="favicon"
+                          name="favicon"
+                          type="url"
+                          value={formData.favicon}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              favicon: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ogImage">OG Image URL</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="ogImage"
+                          name="ogImage"
+                          type="url"
+                          value={formData.ogImage}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              ogImage: e.target.value,
+                            }))
+                          }
+                        />
+                        <div className="relative aspect-video w-full overflow-hidden rounded-md border">
+                          <img
+                            src={formData.ogImage || "/placeholder.jpg"}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="isFavorite"
+                        name="isFavorite"
+                        checked={formData.isFavorite}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isFavorite: checked as boolean,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="isFavorite">Favorite</Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="isArchived"
+                        name="isArchived"
+                        checked={formData.isArchived}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isArchived: checked as boolean,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="isArchived">Archived</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowSingleUploadDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : isNewBookmark ? (
+                      "Create Bookmark"
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -506,279 +796,6 @@ export function BookmarkManager({
           ))}
         </TableBody>
       </Table>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isNewBookmark ? "New Bookmark" : "Edit Bookmark"}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isNewBookmark && selectedBookmark && (
-              <input
-                type="hidden"
-                name="id"
-                value={selectedBookmark.id.toString()}
-              />
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="url">URL</Label>
-                <div className="space-y-2">
-                  <Input
-                    id="url"
-                    name="url"
-                    type="url"
-                    value={formData.url}
-                    onChange={handleUrlChange}
-                    placeholder="https://example.com"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isGenerating}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const form = e.currentTarget.closest("form");
-                      if (form) {
-                        handleGenerateContent(new FormData(form));
-                      }
-                    }}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      "Generate Content"
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleTitleChange}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="slug">Slug</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        slug: e.target.value
-                          .toLowerCase()
-                          .replace(/[^a-z0-9]+/g, "-")
-                          .replace(/^-+|-+$/g, ""),
-                      }))
-                    }
-                    pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
-                    title="Lowercase letters, numbers, and hyphens only. No spaces."
-                    placeholder="my-custom-slug"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const newSlug = generateSlug(formData.title);
-                      setFormData((prev) => ({ ...prev, slug: newSlug }));
-                    }}
-                    className="shrink-0"
-                  >
-                    Generate from Title
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="overview">Overview</Label>
-                <Textarea
-                  id="overview"
-                  name="overview"
-                  value={formData.overview}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      overview: e.target.value,
-                    }))
-                  }
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <Input
-                type="hidden"
-                name="search_results"
-                value={formData.search_results}
-              />
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="categoryId">Category</Label>
-                <Select
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, categoryId: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem
-                        key={category.id}
-                        value={category.id.toString()}
-                      >
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="favicon">Favicon URL</Label>
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={formData.favicon || "/favicon.ico"}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 rounded-sm"
-                    />
-                    <Input
-                      id="favicon"
-                      name="favicon"
-                      type="url"
-                      value={formData.favicon}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          favicon: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ogImage">OG Image URL</Label>
-                  <div className="space-y-2">
-                    <Input
-                      id="ogImage"
-                      name="ogImage"
-                      type="url"
-                      value={formData.ogImage}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          ogImage: e.target.value,
-                        }))
-                      }
-                    />
-                    <div className="relative aspect-video w-full overflow-hidden rounded-md border">
-                      <img
-                        src={formData.ogImage || "/placeholder.jpg"}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="isFavorite"
-                    name="isFavorite"
-                    checked={formData.isFavorite}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isFavorite: checked as boolean,
-                      }))
-                    }
-                  />
-                  <Label htmlFor="isFavorite">Favorite</Label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="isArchived"
-                    name="isArchived"
-                    checked={formData.isArchived}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isArchived: checked as boolean,
-                      }))
-                    }
-                  />
-                  <Label htmlFor="isArchived">Archived</Label>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : isNewBookmark ? (
-                  "Create Bookmark"
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
