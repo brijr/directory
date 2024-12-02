@@ -55,30 +55,25 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       {/* Card Content */}
       <Link href={`/${bookmark.slug}`} className="space-y-3">
         {/* Preview Image */}
-        {bookmark.ogImage && (
-          <div className="relative aspect-video w-full overflow-hidden rounded border">
-            <img
-              src={bookmark.ogImage}
-              alt={bookmark.title}
-              width={400}
-              height={200}
-              className="aspect-video w-full rounded-lg object-cover"
-            />
-          </div>
-        )}
+        <div className="relative aspect-video w-full overflow-hidden rounded border">
+          <img
+            src={bookmark.ogImage || "/placeholder.jpg"}
+            alt={bookmark.title}
+            width={400}
+            height={200}
+            className="aspect-video w-full rounded-lg object-cover"
+          />
+        </div>
 
         {/* Title and Description */}
         <div className="flex items-start gap-2">
-          {bookmark.favicon && (
-            <img
-              src={bookmark.favicon}
-              alt={`${bookmark.title} favicon`}
-              width={16}
-              height={16}
-              className="h-4 w-4"
-            />
-          )}
-
+          <img
+            src={bookmark.favicon || "/favicon.ico"}
+            alt=""
+            width={16}
+            height={16}
+            className="h-4 w-4"
+          />
           <div className="space-y-1">
             <h2 className="font-medium leading-tight">{bookmark.title}</h2>
             {bookmark.description && (
