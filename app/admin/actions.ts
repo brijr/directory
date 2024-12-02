@@ -137,6 +137,9 @@ export async function createBookmark(
     const description = formData.get("description") as string;
     const url = formData.get("url") as string;
     let slug = formData.get("slug") as string;
+    const overview = formData.get("overview") as string;
+    const favicon = formData.get("favicon") as string;
+    const ogImage = formData.get("ogImage") as string;
 
     // Generate slug if not provided
     if (!slug) {
@@ -148,8 +151,6 @@ export async function createBookmark(
     const isFavorite = formData.get("isFavorite") === "true";
     const isArchived = formData.get("isArchived") === "true";
 
-    const { overview, ...metadata } = await generateContent(url, search_results);
-
     await db.insert(bookmarks).values({
       title,
       slug,
@@ -160,8 +161,8 @@ export async function createBookmark(
       isFavorite,
       isArchived,
       overview,
-      favicon: metadata.favicon,
-      ogImage: metadata.ogImage,
+      favicon,
+      ogImage,
     });
 
     revalidatePath("/admin");
@@ -193,6 +194,9 @@ export async function updateBookmark(
     const description = formData.get("description") as string;
     const url = formData.get("url") as string;
     let slug = formData.get("slug") as string;
+    const overview = formData.get("overview") as string;
+    const favicon = formData.get("favicon") as string;
+    const ogImage = formData.get("ogImage") as string;
 
     // Generate slug if not provided
     if (!slug) {
@@ -201,8 +205,6 @@ export async function updateBookmark(
 
     const categoryId = formData.get("categoryId") as string;
     const search_results = formData.get("search_results") as string;
-
-    const { overview, ...metadata } = await generateContent(url, search_results);
 
     await db
       .update(bookmarks)
@@ -214,8 +216,8 @@ export async function updateBookmark(
         categoryId: categoryId || null,
         search_results: search_results || null,
         overview,
-        favicon: metadata.favicon,
-        ogImage: metadata.ogImage,
+        favicon,
+        ogImage,
       })
       .where(eq(bookmarks.id, Number(id)));
 

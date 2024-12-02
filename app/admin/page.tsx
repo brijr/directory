@@ -1,4 +1,5 @@
 import React from "react";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { getAllCategories, getAllBookmarks } from "@/lib/data";
@@ -14,13 +15,13 @@ export default async function AdminPage() {
     <Section>
       <Container>
         <h1 className="mb-8 text-4xl font-bold">Admin Dashboard</h1>
-        
+
         <Tabs defaultValue="bookmarks">
           <TabsList>
             <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
-        
+
           <TabsContent value="bookmarks">
             <Card className="p-6">
               <BookmarkManager bookmarks={bookmarks} categories={categories} />

@@ -64,7 +64,8 @@ export function BookmarkManager({
   const [isNewBookmark, setIsNewBookmark] = useState(true);
   const [selectedBookmark, setSelectedBookmark] =
     useState<BookmarkWithCategory | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form state management
   const [formData, setFormData] = useState({
@@ -84,7 +85,8 @@ export function BookmarkManager({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (isSaving) return;
+    setIsSaving(true);
 
     const formDataToSubmit = new FormData(e.currentTarget);
 
@@ -106,7 +108,7 @@ export function BookmarkManager({
       console.error("Error submitting bookmark:", error);
       toast.error("Failed to save bookmark");
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -159,7 +161,7 @@ export function BookmarkManager({
 
   const onDelete = async (bookmark: BookmarkWithCategory) => {
     if (window.confirm("Are you sure you want to delete this bookmark?")) {
-      setIsLoading(true);
+      setIsSaving(true);
       const formData = new FormData();
       formData.append("id", bookmark.id.toString());
 
@@ -172,7 +174,7 @@ export function BookmarkManager({
         console.error("Error deleting bookmark:", err);
         toast.error("Failed to delete bookmark");
       } finally {
-        setIsLoading(false);
+        setIsSaving(false);
       }
     }
   };
@@ -192,14 +194,21 @@ export function BookmarkManager({
   };
 
   const handleGenerateContent = async (formData: FormData) => {
+    if (isGenerating) return;
+
     try {
-      setIsLoading(true);
+      setIsGenerating(true);
       const url = formData.get("url") as string;
       const searchResults = formData.get("search_results") as string;
 
-      console.log("Generating content for URL:", url); // Debug log
+      if (!url) {
+        toast.error("Please enter a URL first");
+        return;
+      }
+
+      console.log("Generating content for URL:", url);
       const content = await generateContent(url, searchResults);
-      console.log("Received content:", content); // Debug log
+      console.log("Received content:", content);
 
       // Update form state with generated content
       setFormData((prev) => ({
@@ -219,7 +228,7 @@ export function BookmarkManager({
       console.error("Error generating content:", error);
       toast.error("Failed to generate content. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -268,15 +277,13 @@ export function BookmarkManager({
             <TableRow key={bookmark.id}>
               <TableCell>
                 <div className="flex items-start gap-2">
-                  {bookmark.favicon && (
-                    <img
-                      src={bookmark.favicon}
-                      alt={`${bookmark.title} favicon`}
-                      width={20}
-                      height={20}
-                      className="mt-1 h-5 w-5 rounded-sm"
-                    />
-                  )}
+                  <img
+                    src={bookmark.favicon || "/favicon.ico"}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="mt-1 h-5 w-5 rounded-sm"
+                  />
                   <div>
                     <div className="font-medium">{bookmark.title}</div>
                     <div className="text-sm text-muted-foreground">
@@ -373,7 +380,7 @@ export function BookmarkManager({
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={isLoading}
+                    disabled={isGenerating}
                     onClick={(e) => {
                       e.preventDefault();
                       const form = e.currentTarget.closest("form");
@@ -381,8 +388,9 @@ export function BookmarkManager({
                         handleGenerateContent(new FormData(form));
                       }
                     }}
+                    className="w-full"
                   >
-                    {isLoading ? (
+                    {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating...
@@ -483,36 +491,54 @@ export function BookmarkManager({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="favicon">Favicon URL</Label>
-                  <Input
-                    id="favicon"
-                    name="favicon"
-                    type="url"
-                    value={formData.favicon}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        favicon: e.target.value,
-                      }))
-                    }
-                  />
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={formData.favicon || "/favicon.ico"}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 rounded-sm"
+                    />
+                    <Input
+                      id="favicon"
+                      name="favicon"
+                      type="url"
+                      value={formData.favicon}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          favicon: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="ogImage">OG Image URL</Label>
-                  <Input
-                    id="ogImage"
-                    name="ogImage"
-                    type="url"
-                    value={formData.ogImage}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        ogImage: e.target.value,
-                      }))
-                    }
-                  />
+                  <div className="space-y-2">
+                    <Input
+                      id="ogImage"
+                      name="ogImage"
+                      type="url"
+                      value={formData.ogImage}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          ogImage: e.target.value,
+                        }))
+                      }
+                    />
+                    <div className="relative aspect-video w-full overflow-hidden rounded-md border">
+                      <img
+                        src={formData.ogImage || "/placeholder.jpg"}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -557,8 +583,17 @@ export function BookmarkManager({
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                {isNewBookmark ? "Create Bookmark" : "Save Changes"}
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : isNewBookmark ? (
+                  "Create Bookmark"
+                ) : (
+                  "Save Changes"
+                )}
               </Button>
             </DialogFooter>
           </form>
