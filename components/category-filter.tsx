@@ -21,7 +21,10 @@ interface CategoryFilterProps {
   totalResults: number;
 }
 
-export const CategoryFilter = ({ categories, totalResults }: CategoryFilterProps) => {
+export const CategoryFilter = ({
+  categories,
+  totalResults,
+}: CategoryFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
@@ -51,16 +54,16 @@ export const CategoryFilter = ({ categories, totalResults }: CategoryFilterProps
   }, 300);
 
   return (
-    <div className="sticky top-4 z-10 mb-4 space-y-2 border bg-card p-2 shadow-sm">
+    <div className="sticky top-4 z-10 mb-4 flex items-center justify-between space-y-2">
       <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative max-w-xs flex-1">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             defaultValue={searchParams.get("search") ?? ""}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search..."
-            className="pl-8 h-8"
+            className="h-8 pl-8"
           />
           {isPending && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -81,18 +84,9 @@ export const CategoryFilter = ({ categories, totalResults }: CategoryFilterProps
         {categories.map((category) => (
           <Button
             key={category.id}
-            variant={currentCategory === category.id ? "default" : "outline"}
+            variant="outline"
             size="sm"
             onClick={() => handleCategoryClick(category.id)}
-            className={cn(
-              "min-w-[60px]",
-              currentCategory !== category.id && "hover:border-current"
-            )}
-            style={{
-              '--category-color': category.color || 'currentColor',
-              borderColor: currentCategory !== category.id ? category.color : undefined,
-              color: currentCategory !== category.id ? category.color : undefined,
-            } as React.CSSProperties}
           >
             {category.icon && (
               <span className="mr-1" role="img" aria-label={category.name}>
@@ -102,11 +96,6 @@ export const CategoryFilter = ({ categories, totalResults }: CategoryFilterProps
             {category.name}
           </Button>
         ))}
-      </div>
-      <div className="text-xs text-muted-foreground">
-        Found {totalResults} resource{totalResults !== 1 ? "s" : ""}
-        {searchTerm && ` matching "${searchTerm}"`}
-        {currentCategory && ` in selected category`}
       </div>
     </div>
   );

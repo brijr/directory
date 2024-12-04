@@ -67,7 +67,6 @@ const Header = () => {
         <Link href="/" className="transition-all hover:opacity-80">
           <Image
             src={Logo}
-            className="dark:invert"
             alt="Design Engineer Logo"
             width={96}
             height={39.68}
@@ -83,23 +82,35 @@ const Footer = () => {
   return (
     <footer>
       <Container className="flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          Created at{" "}
-          <a
-            className="underline transition-all hover:text-foreground"
-            href="https://wip-design.com"
-          >
-            WIP
-          </a>{" "}
-          by{" "}
-          <a
-            className="underline transition-all hover:text-foreground"
-            href="https://bridger.to"
-          >
-            Bridger
-          </a>
-          .
-        </p>
+        <div className="grid gap-1 text-xs text-muted-foreground">
+          <p>
+            © {new Date().getFullYear()} {directory.name}.
+          </p>
+          <p>
+            Created at{" "}
+            <a
+              className="underline transition-all hover:text-foreground"
+              href="https://9d8.dev"
+            >
+              9d8
+            </a>{" "}
+            by{" "}
+            <a
+              className="underline transition-all hover:text-foreground"
+              href="https://bridger.to"
+            >
+              Bridger
+            </a>{" "}
+            and{" "}
+            <a
+              className="underline transition-all hover:text-foreground"
+              href="https://cameron.so"
+            >
+              Cameron
+            </a>
+            .
+          </p>
+        </div>
         <ThemeToggle />
       </Container>
     </footer>
