@@ -62,7 +62,11 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       </div>
 
       {/* Preview Image Container */}
-      <div className="relative aspect-video w-full overflow-hidden">
+      <Link
+        href={detailsUrl}
+        className="relative aspect-video w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        aria-label={`View details for ${bookmark.title}`}
+      >
         {bookmark.ogImage ? (
           <img
             src={bookmark.ogImage}
@@ -78,7 +82,8 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
             />
           </div>
         )}
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </Link>
 
       {/* Content Section */}
       <div className="flex flex-1 flex-col p-4">
@@ -148,7 +153,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
                 className="inline-flex items-center"
               >
                 Visit Site
-                <ExternalLink className="ml-2 h-3 w-3 transition-transform group-hover/link:translate-x-0.5" />
+                <ExternalLink className="ml-2 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
           </div>
