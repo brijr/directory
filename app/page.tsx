@@ -67,7 +67,6 @@ export default async function Home({
                   color: cat.color || undefined,
                   icon: cat.icon || undefined,
                 }))}
-                totalResults={filteredBookmarks.length}
               />
             </Suspense>
 
