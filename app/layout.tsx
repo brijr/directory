@@ -29,9 +29,9 @@ const font = Font({
 });
 
 export const metadata: Metadata = {
-  title: "designengineer.fyi | Resources for Design Engineers",
+  title: "9d8/directory | AI-powered Next.js Directory Template by 9d8",
   description:
-    "A collection of resources for design engineers. Categories include: animation libraries, component libraries, learning resources, inpiration, people, fonts, icons, and some other tools.",
+    "Use this template to display a collection of resources or bookmarks. Create a directory website in little to no time.",
 };
 
 export default function RootLayout({
