@@ -58,7 +58,7 @@ export default async function Home({
             </p>
           </div>
 
-          <div className="mt-12 space-y-6">
+          <div className="mt-24 space-y-6">
             <Suspense fallback={<div>Loading categories...</div>}>
               <CategoryFilter
                 categories={categories.map((cat) => ({
