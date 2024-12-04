@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Lock, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -11,8 +16,14 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
     setError("");
     setLoading(true);
+    console.log('Attempting login...');
 
     try {
       const response = await fetch("/api/admin/login", {
@@ -20,66 +31,101 @@ export default function AdminLogin() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: password.trim() }),
+        credentials: "include", // Important for handling cookies
       });
 
-      if (response.ok) {
-        // Redirect to admin page on successful login
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok && data.success) {
+        console.log('Login successful, redirecting...');
+        // Add a small delay before redirecting
+        await new Promise((resolve) => setTimeout(resolve, 500));
         router.push("/admin");
         router.refresh();
       } else {
-        setError("Invalid password");
+        console.log('Login failed:', data.error);
+        setError(data.error || "Invalid password. Please try again.");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      setError("Authentication failed");
+      setError("Failed to connect to the server. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
-            Admin Login
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
-            <div>
+    <div className="flex min-h-[80vh] items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md p-8">
+        <div className="flex flex-col items-center space-y-6">
+          {/* Header */}
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold tracking-tight">Admin Access</h1>
+            <p className="text-sm text-muted-foreground">
+              Enter your admin password to continue
+            </p>
+          </div>
+
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive" className="text-sm">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Login Form */}
+          <form className="w-full space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1">
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <input
+              <Input
                 id="password"
-                name="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full appearance-none rounded-md border border-input px-3 py-2 text-foreground placeholder-muted-foreground focus:z-10 focus:border-ring focus:outline-none focus:ring-ring sm:text-sm"
-                placeholder="Admin password"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                className="w-full"
+                placeholder="Enter admin password"
+                disabled={loading}
               />
             </div>
-          </div>
 
-          {error && (
-            <div className="text-center text-sm text-destructive">{error}</div>
-          )}
-
-          <div>
-            <button
+            <Button
               type="submit"
+              className="w-full"
+              size="lg"
               disabled={loading}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
             >
-              {loading ? "Logging in..." : "Sign in"}
-            </button>
-          </div>
-        </form>
-      </div>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+        </div>
+      </Card>
     </div>
   );
 }
