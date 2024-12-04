@@ -64,7 +64,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
       {/* Preview Image Container */}
       <Link
         href={detailsUrl}
-        className="relative aspect-video w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="relative aspect-video w-full overflow-hidden border-b focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         aria-label={`View details for ${bookmark.title}`}
       >
         {bookmark.ogImage ? (
@@ -82,7 +82,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
             />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </Link>
 
       {/* Content Section */}
