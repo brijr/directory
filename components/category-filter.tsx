@@ -85,7 +85,7 @@ export const CategoryFilter = ({ categories }: CategoryFilterProps) => {
   }, SEARCH_DEBOUNCE_MS);
 
   return (
-    <div className="sticky top-4 z-10 mb-4 flex items-center justify-between space-y-2">
+    <div className="sticky top-4 z-10 my-12 flex items-center justify-between space-y-2">
       <div className="flex items-center gap-2">
         <SearchInput
           defaultValue={searchParams.get("search") ?? ""}
