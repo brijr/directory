@@ -1,4 +1,4 @@
-// React /Next Imports
+// React + Next Imports
 import React from "react";
 import { Suspense } from "react";
 
@@ -12,6 +12,7 @@ import { BookmarkGrid } from "@/components/bookmark-grid";
 import { CategoryFilter } from "@/components/category-filter";
 import { SearchBar } from "@/components/search-bar";
 import { SearchResultsCounter } from "@/components/search-results-counter";
+import Balancer from "react-wrap-balancer";
 
 export default async function Home({
   searchParams,
@@ -45,8 +46,10 @@ export default async function Home({
     <Main>
       <Section>
         <Container>
-          <h1 className="sr-only">
-            Resources and Tools for Design Engineers / designengineer.fyi
+          <h1 className="text-center !font-semibold !leading-tight">
+            <Balancer>
+              Welcome to the AI-powered Next.js Directory Template by 9d8
+            </Balancer>
           </h1>
 
           <div className="space-y-6">

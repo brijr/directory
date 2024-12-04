@@ -1,6 +1,6 @@
-import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
-import { NextResponse } from 'next/server';
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText } from "ai";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -8,8 +8,8 @@ export async function POST(request: Request) {
 
     if (!url || !searchResults) {
       return NextResponse.json(
-        { error: 'URL and search results are required' },
-        { status: 400 }
+        { error: "URL and search results are required" },
+        { status: 400 },
       );
     }
 
@@ -22,10 +22,10 @@ export async function POST(request: Request) {
     ${searchResults}`;
 
     const { text } = await generateText({
-      model: anthropic('claude-3-haiku-20240307'),
+      model: anthropic("claude-3-haiku-20240307"),
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
@@ -33,10 +33,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ overview: text });
   } catch (error) {
-    console.error('Error generating overview:', error);
+    console.error("Error generating overview:", error);
     return NextResponse.json(
-      { error: 'Failed to generate overview' },
-      { status: 500 }
+      { error: "Failed to generate overview" },
+      { status: 500 },
     );
   }
 }

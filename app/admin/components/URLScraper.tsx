@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ResultDisplay } from "./ResultDisplay";
-import { scrapeUrl } from '../actions';
+import { scrapeUrl } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,7 +71,7 @@ export function URLScraper() {
             onChange={(e) => setUrl(e.target.value)}
           />
         </div>
-        
+
         <Button type="submit" className="w-full">
           Scrape URL
         </Button>

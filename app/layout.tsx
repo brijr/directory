@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
-import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/public/logo.svg";
 import "./globals.css";
+import { Inter as Font } from "next/font/google";
 
 import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -23,16 +23,9 @@ import {
 
 import { Mail } from "lucide-react";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const font = Font({
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -48,9 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${font.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

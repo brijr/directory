@@ -269,7 +269,7 @@ export async function deleteBookmark(
 }
 
 // Helper function to delay execution
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function bulkUploadBookmarks(
   prevState: ActionState | null,
@@ -282,11 +282,14 @@ export async function bulkUploadBookmarks(
     }
 
     const text = await file.text();
-    const rows = text.split("\n").map(row => row.trim()).filter(row => row);
-    
+    const rows = text
+      .split("\n")
+      .map((row) => row.trim())
+      .filter((row) => row);
+
     // Skip header row if it exists
     const urls = rows[0].toLowerCase().includes("url") ? rows.slice(1) : rows;
-    
+
     let successCount = 0;
     let errorCount = 0;
     let lastAddedTitle = "";
@@ -304,7 +307,7 @@ export async function bulkUploadBookmarks(
 
         // Generate content for the URL
         const content = await generateContent(url, null);
-        
+
         // Create the bookmark
         await db.insert(bookmarks).values({
           title: content.title,
@@ -326,30 +329,29 @@ export async function bulkUploadBookmarks(
         // Revalidate after each successful addition
         revalidatePath("/admin");
         revalidatePath("/");
-
       } catch (err) {
         console.error(`Error processing URL: ${url}`, err);
-        
+
         // Check if it's a rate limit error
-        if (err instanceof Error && err.message.includes('rate limit')) {
+        if (err instanceof Error && err.message.includes("rate limit")) {
           // Wait for 10 seconds before retrying
           await delay(10000);
           i--; // Retry the same URL
           continue;
         }
-        
+
         errorCount++;
       }
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: `Successfully imported ${successCount} bookmarks. ${errorCount > 0 ? `Failed to import ${errorCount} URLs.` : ""}`,
       progress: {
         current: urls.length,
         total: urls.length,
-        lastAdded: lastAddedTitle
-      }
+        lastAdded: lastAddedTitle,
+      },
     };
   } catch (err) {
     console.error("Error bulk uploading bookmarks:", err);
@@ -369,7 +371,6 @@ export async function scrapeUrl(
     const exa = new Exa(process.env.EXASEARCH_API_KEY as string);
 
     const result = await exa.getContents([url], {
-      summary: true,
       text: true,
       livecrawl: "fallback",
     });
@@ -377,7 +378,8 @@ export async function scrapeUrl(
     console.log("Scraped metadata:", result); // Debug log
 
     // Extract metadata from the first result
-    const metadata = Array.isArray(result) && result.length > 0 ? result[0] : {};
+    const metadata =
+      Array.isArray(result) && result.length > 0 ? result[0] : {};
 
     return {
       error: null,
