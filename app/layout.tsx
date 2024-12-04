@@ -12,6 +12,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Container } from "@/components/craft";
 import { EmailForm } from "@/components/email-form";
 
+import { directory } from "@/directory.config";
+
 import {
   Dialog,
   DialogContent,
@@ -29,9 +31,9 @@ const font = Font({
 });
 
 export const metadata: Metadata = {
-  title: "9d8/directory | AI-powered Next.js Directory Template by 9d8",
-  description:
-    "Use this template to display a collection of resources or bookmarks. Create a directory website in little to no time.",
+  title: directory.title,
+  description: directory.description,
+  metadataBase: new URL(directory.baseUrl),
 };
 
 export default function RootLayout({

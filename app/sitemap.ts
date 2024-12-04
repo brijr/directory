@@ -1,8 +1,9 @@
 import { MetadataRoute } from "next";
 import { getAllBookmarks } from "@/lib/data";
+import { directory } from "@/directory.config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://designengineer.fyi";
+  const baseUrl = directory.baseUrl;
 
   // Fetch all bookmarks
   const bookmarks = await getAllBookmarks();
