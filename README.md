@@ -2,62 +2,44 @@
 
 A modern, AI-powered Next.js directory template for creating beautiful resource collections and bookmarks. Perfect for creating your own curated list of resources, bookmarks, or link directories. View the live demo at [directory.9d8.dev](https://directory.9d8.dev).
 
+## Overview
+
+Built with modern web technologies and designed with a focus on user experience, this template provides everything you need to create a professional resource directory:
+
+- **Resource Management**: Organize and share bookmarks with rich metadata
+- **AI Integration**: Automatic content generation and smart categorization
+- **Newsletter**: Built-in email subscription with Loops integration
+- **Beautiful UI**: Responsive design with dark/light mode support
+- **Admin Dashboard**: Powerful tools for content management
+
+## Tech Stack
+
+- **Framework**: Next.js 14+ with App Router and Server Actions
+- **Database**: Turso (SQLite) with Drizzle ORM
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **AI**: Anthropic Claude for content generation
+- **Search**: Exa for semantic search capabilities
+- **Analytics**: Built-in Vercel Analytics
+
 ## Features
 
-- 🚀 **Modern Stack**
+### For Users
 
-  - Next.js 14+ with App Router
-  - TypeScript for type safety
-  - Tailwind CSS for styling
-  - shadcn/ui components
-  - Drizzle ORM with SQLite
-  - Vercel Analytics integration
+- **Smart Search**: Search across titles, descriptions, and categories
+- **Category Filtering**: Browse resources by custom categories
+- **Responsive Design**: Works beautifully on all devices
+- **Theme Support**: Automatic dark/light mode
+- **Newsletter**: Subscribe for weekly resource updates
 
-- 💡 **Smart Features**
+### For Admins
 
-  - AI-powered content suggestions using Anthropic
-  - Automatic metadata extraction from URLs
-  - Rich bookmark previews with favicons
-  - Category-based organization with custom colors and icons
+- **Secure Admin Panel**: Password-protected admin interface
+- **Rich Content Editor**: Full-featured bookmark management
+- **AI Assistance**: Automatic metadata extraction and content generation
+- **Dashboard**: View statistics and manage content
+- **Category Management**: Create and organize categories
 
-- 🎨 **Beautiful UI/UX**
-
-  - Responsive card-based layout
-  - Dark/light mode support
-  - Custom category colors and icons
-  - Clean and modern design
-  - Radix UI primitives
-
-- 🛠 **Developer Experience**
-
-  - Database management with Drizzle Studio
-  - Type-safe database operations
-  - Easy deployment to Vercel
-  - Comprehensive API routes
-  - Environment variable validation
-
-## Project Structure
-
-```
-├── app/                    # Next.js app directory
-│   ├── [slug]/            # Dynamic routes for bookmarks
-│   ├── admin/             # Admin dashboard components
-│   ├── api/               # API routes for CRUD operations
-│   └── page.tsx           # Home page with bookmark grid
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui components
-│   └── bookmark-card.tsx # Bookmark display component
-├── db/                    # Database configuration
-│   ├── client.ts         # Drizzle client setup
-│   ├── schema.ts         # SQLite schema with categories & bookmarks
-│   └── seed.ts           # Initial data seeding
-├── lib/                   # Utility functions
-│   ├── data.ts           # Data fetching utilities
-│   └── utils.ts          # Helper functions
-└── directory.config.ts    # Site configuration
-```
-
-## Getting Started
+## Quick Start
 
 1. Clone the repository:
 
@@ -77,8 +59,6 @@ pnpm install
 ```bash
 cp .env.example .env
 ```
-
-Required environment variables:
 
 ### Database Configuration
 
@@ -112,14 +92,6 @@ Required environment variables:
   - Format: `https://yourdomain.com`
   - Used for generating OpenGraph images and links
 
-You can copy the example environment file to get started:
-
-```bash
-cp .env.example .env
-```
-
-Then replace each value with your actual credentials. Make sure to keep your `.env` file secure and never commit it to version control.
-
 4. Initialize the database:
 
 ```bash
@@ -128,39 +100,54 @@ pnpm db:migrate    # Run migrations
 pnpm db:seed      # Seed initial data (optional)
 ```
 
-5. Run the development server:
+5. Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Admin Dashboard
 
-## Database Schema
+The admin dashboard at `/admin` provides a powerful interface for managing your directory:
 
-The project uses a SQLite database with Drizzle ORM, featuring two main tables:
+### Managing Bookmarks
 
-### Categories
+1. **Add Single Bookmark**
 
-- `id`: Unique identifier
-- `name`: Category name
-- `description`: Optional description
-- `slug`: URL-friendly identifier
-- `color`: Custom UI color
-- `icon`: Custom icon name
+   - Enter URL for automatic metadata extraction
+   - AI-powered description and overview generation
+   - Customize metadata and categorization
+   - Set favorite/archived status
 
-### Bookmarks
+2. **Bulk Import**
 
-- `id`: Unique identifier
-- `url`: Resource URL
-- `title`: Bookmark title
-- `description`: Resource description
-- `slug`: URL-friendly identifier
-- `categoryId`: Related category
-- `tags`: Comma-separated tags
-- `favicon`: Website favicon URL
+   - Paste multiple URLs for batch processing
+   - Automatic metadata extraction for all entries
+   - Review and edit before final import
 
-## Configuration
+3. **Edit Bookmarks**
+   - Update metadata and categories
+   - Regenerate AI content
+   - Manage bookmark status
+   - View analytics and engagement
+
+### Managing Categories
+
+- Create custom categories with colors and icons
+- Organize bookmarks into categories
+- Edit category metadata
+- View category statistics
+
+### API Integration
+
+The admin interface uses Next.js Server Actions for:
+
+- Real-time updates
+- Optimistic UI
+- Error handling
+- Progress tracking
+
+## Customization
 
 Edit `directory.config.ts` to customize your site:
 
@@ -172,85 +159,6 @@ export const directory = {
   description: "Your site description",
 };
 ```
-
-## Admin Dashboard
-
-The admin dashboard at `/admin` provides a powerful interface for managing your directory. Here's what you can do:
-
-### Managing Bookmarks
-
-1. **Add Single Bookmark**
-
-   - Navigate to Admin → Add Bookmark
-   - Enter the URL and click "Fetch Data"
-   - The system will automatically:
-     - Extract metadata (title, description, favicon)
-     - Generate AI-powered content suggestions
-     - Create a URL-friendly slug
-   - Review and edit the extracted information
-   - Assign a category and set status (favorite, archived)
-   - Click "Save" to add the bookmark
-
-2. **Bulk Import**
-
-   - Navigate to Admin → Bulk Import
-   - Paste multiple URLs (one per line)
-   - The system will process each URL automatically
-   - Review the results and confirm the import
-   - All bookmarks will inherit default settings
-
-3. **Edit Bookmarks**
-
-   - Navigate to Admin → Manage Bookmarks
-   - Use filters to find specific bookmarks
-   - Click on a bookmark to edit:
-     - Update metadata
-     - Change category
-     - Toggle favorite/archived status
-     - Modify URL or slug
-
-### Managing Categories
-
-1. **Create Categories**
-
-   - Navigate to Admin → Categories
-   - Click "New Category"
-   - Set required fields:
-     - Name
-     - Description (optional)
-     - Color (for UI customization)
-     - Icon (supports any icon name)
-
-2. **Edit Categories**
-
-   - Click on any category to edit
-   - Update name, description, color, or icon
-   - Changes apply to all bookmarks in the category
-   - Delete categories (bookmarks will be uncategorized)
-
-### AI Features
-
-The admin interface includes AI-powered features using Anthropic:
-
-- **Content Generation**
-
-  - Automatic description generation
-  - Overview and context extraction
-  - Search-optimized content suggestions
-
-- **Metadata Extraction**
-  - Smart title parsing
-  - Description summarization
-  - Favicon and OpenGraph image detection
-
-### API Integration
-
-The admin interface is built on top of Next.js Server Actions, providing:
-
-- Real-time updates
-- Optimistic UI
-- Error handling
-- Progress tracking for bulk operations
 
 ## Deployment
 
@@ -285,3 +193,7 @@ For support:
 - Open an issue in the [GitHub repository](https://github.com/9d8dev/directory)
 - Check out the [documentation](https://directory.9d8.dev/docs)
 - Join our [Discord community](https://discord.gg/your-server)
+
+## Created by
+
+Built at [9d8](https://9d8.dev) by [Bridger](https://bridger.to) and [Cameron](https://cameron.so).
