@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -26,10 +28,14 @@ interface BookmarkCardProps {
 }
 
 export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
+  const detailsUrl = `/${bookmark.slug}`;
+  const externalUrl = bookmark.url;
+
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border bg-card",
+        "not-prose",
+        "group relative flex h-full flex-col overflow-hidden rounded-xl border bg-card",
         "transition-all duration-300 hover:shadow-lg",
         "hover:ring-2 hover:ring-accent hover:ring-offset-2",
         bookmark.isArchived && "opacity-75 hover:opacity-100",
@@ -55,32 +61,43 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
         )}
       </div>
 
-      {/* Card Content */}
-      <Link
-        href={`/${bookmark.slug}`}
-        className="block space-y-3"
-        aria-label={`View details for ${bookmark.title}`}
-      >
-        {/* Preview Image Container */}
-        <div className="relative aspect-video w-full overflow-hidden">
-          {bookmark.ogImage ? (
-            <img
-              src={bookmark.ogImage}
-              alt={`Preview of ${bookmark.title}`}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
+      {/* Preview Image Container */}
+      <div className="relative aspect-video w-full overflow-hidden">
+        {bookmark.ogImage ? (
+          <img
+            src={bookmark.ogImage}
+            alt={`Preview of ${bookmark.title}`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-muted">
+            <Bookmark
+              className="h-8 w-8 text-muted-foreground"
+              aria-hidden="true"
             />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-muted">
-              <Bookmark className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content Section */}
+      <div className="flex flex-1 flex-col p-4">
+        {/* Title and Description */}
+        <div className="flex-1 space-y-1">
+          <h2 className="font-semibold leading-tight tracking-tight">
+            {bookmark.title}
+          </h2>
+          {bookmark.description && (
+            <p className="line-clamp-2 text-sm text-muted-foreground">
+              {bookmark.description}
+            </p>
           )}
         </div>
 
-        {/* Content Section */}
-        <div className="space-y-3 p-4">
-          {/* Title and Favicon */}
-          <div className="flex items-start gap-2">
+        {/* Bottom Section */}
+        <div className="space-y-3 pt-4">
+          {/* Category and Site Info */}
+          <div className="flex items-center gap-2">
             {bookmark.favicon ? (
               <img
                 src={bookmark.favicon}
@@ -89,53 +106,43 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
                 loading="lazy"
               />
             ) : (
-              <Bookmark className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <Bookmark
+                className="h-4 w-4 text-muted-foreground"
+                aria-hidden="true"
+              />
             )}
-            <div className="space-y-1 flex-1">
-              <h2 className="font-semibold leading-tight tracking-tight">
-                {bookmark.title}
-              </h2>
-              {bookmark.description && (
-                <p className="line-clamp-2 text-sm text-muted-foreground">
-                  {bookmark.description}
-                </p>
-              )}
-            </div>
+            {bookmark.category && (
+              <Badge
+                style={{
+                  backgroundColor:
+                    bookmark.category.color || "hsl(var(--primary))",
+                  color: "white",
+                }}
+                className="w-fit transition-transform hover:scale-105"
+              >
+                {bookmark.category.icon} {bookmark.category.name}
+              </Badge>
+            )}
           </div>
 
-          {/* Category Badge */}
-          {bookmark.category && (
-            <Badge
-              style={{
-                backgroundColor: bookmark.category.color || 'hsl(var(--primary))',
-                color: "white",
-              }}
-              className="w-fit transition-transform hover:scale-105"
-            >
-              {bookmark.category.icon} {bookmark.category.name}
-            </Badge>
-          )}
-
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2">
             <Button
               variant="secondary"
               size="sm"
               className="w-full font-medium"
               asChild
             >
-              <Link href={`/${bookmark.slug}`}>
-                View Details
-              </Link>
+              <Link href={detailsUrl}>View Details</Link>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="w-full font-medium group/link"
+              className="group/link w-full font-medium"
               asChild
             >
               <Link
-                href={bookmark.url}
+                href={externalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center"
@@ -146,7 +153,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
             </Button>
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 };
