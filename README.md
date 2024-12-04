@@ -29,6 +29,7 @@ A modern, AI-powered Next.js directory template for creating beautiful resource 
   - Radix UI primitives
 
 - 🛠 **Developer Experience**
+
   - Database management with Drizzle Studio
   - Type-safe database operations
   - Easy deployment to Vercel
@@ -61,8 +62,8 @@ A modern, AI-powered Next.js directory template for creating beautiful resource 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/9d8-directory.git
-cd 9d8-directory
+git clone https://github.com/9d8dev/directory.git
+cd directory
 ```
 
 2. Install dependencies:
@@ -137,19 +138,95 @@ export const directory = {
 
 ## Admin Dashboard
 
-Access the admin dashboard at `/admin` to:
+The admin dashboard at `/admin` provides a powerful interface for managing your directory. Here's what you can do:
 
-- Add and manage bookmarks
-- Create and organize categories
-- Use AI to generate descriptions
-- Preview bookmarks before saving
-- Bulk import/export data
+### Managing Bookmarks
+
+1. **Add Single Bookmark**
+
+   - Navigate to Admin → Add Bookmark
+   - Enter the URL and click "Fetch Data"
+   - The system will automatically:
+     - Extract metadata (title, description, favicon)
+     - Generate AI-powered content suggestions
+     - Create a URL-friendly slug
+   - Review and edit the extracted information
+   - Assign a category and set status (favorite, archived)
+   - Click "Save" to add the bookmark
+
+2. **Bulk Import**
+
+   - Navigate to Admin → Bulk Import
+   - Paste multiple URLs (one per line)
+   - The system will process each URL automatically
+   - Review the results and confirm the import
+   - All bookmarks will inherit default settings
+
+3. **Edit Bookmarks**
+
+   - Navigate to Admin → Manage Bookmarks
+   - Use filters to find specific bookmarks
+   - Click on a bookmark to edit:
+     - Update metadata
+     - Change category
+     - Toggle favorite/archived status
+     - Modify URL or slug
+
+### Managing Categories
+
+1. **Create Categories**
+
+   - Navigate to Admin → Categories
+   - Click "New Category"
+   - Set required fields:
+     - Name
+     - Description (optional)
+     - Color (for UI customization)
+     - Icon (supports any icon name)
+
+2. **Edit Categories**
+
+   - Click on any category to edit
+   - Update name, description, color, or icon
+   - Changes apply to all bookmarks in the category
+   - Delete categories (bookmarks will be uncategorized)
+
+### AI Features
+
+The admin interface includes AI-powered features using Anthropic:
+
+- **Content Generation**
+  - Automatic description generation
+  - Overview and context extraction
+  - Search-optimized content suggestions
+
+- **Metadata Extraction**
+  - Smart title parsing
+  - Description summarization
+  - Favicon and OpenGraph image detection
+
+### Keyboard Shortcuts
+
+- `⌘ + K` - Open command palette
+- `⌘ + S` - Save current form
+- `⌘ + N` - New bookmark
+- `⌘ + E` - Edit mode
+- `⌘ + D` - Delete selected item
+
+### API Integration
+
+The admin interface is built on top of Next.js Server Actions, providing:
+
+- Real-time updates
+- Optimistic UI
+- Error handling
+- Progress tracking for bulk operations
 
 ## Deployment
 
 Deploy to Vercel with one click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/9d8-directory)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/9d8dev/directory)
 
 The project is optimized for Vercel deployment with:
 
@@ -175,6 +252,6 @@ MIT License - feel free to use this template for your own projects!
 
 For support:
 
-- Open an issue in the GitHub repository
+- Open an issue in the [GitHub repository](https://github.com/9d8dev/directory)
 - Check out the [documentation](https://directory.9d8.dev/docs)
 - Join our [Discord community](https://discord.gg/your-server)
