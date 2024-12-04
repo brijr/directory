@@ -1,8 +1,10 @@
 "use client";
 
+import { directory } from "@/directory.config";
+
 // ! MAKE SURE TO CHANGE THE SOURCE AND USER GROUP
-const source = "https://designengineer.fyi";
-const userGroup = "designengineer.fyi";
+const source = directory.baseUrl;
+const userGroup = directory.name;
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +30,7 @@ const formSchema = z.object({
   }),
 });
 
-export function EmailForm({ label }: { label?: string }) {
+export function EmailForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
