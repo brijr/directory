@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 import { useTransition } from "react";
 
@@ -18,17 +17,12 @@ interface Category {
 
 interface CategoryFilterProps {
   categories: Category[];
-  totalResults: number;
 }
 
-export const CategoryFilter = ({
-  categories,
-  totalResults,
-}: CategoryFilterProps) => {
+export const CategoryFilter = ({ categories }: CategoryFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
-  const searchTerm = searchParams.get("search");
   const [isPending, startTransition] = useTransition();
 
   const handleCategoryClick = (categoryId: string | null) => {
