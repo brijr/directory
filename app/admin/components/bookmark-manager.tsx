@@ -40,7 +40,7 @@ import {
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, X, Upload, Loader2, Trash2 } from "lucide-react";
+import { Plus, Upload, Loader2, Trash2 } from "lucide-react";
 
 interface Category {
   id: string;

@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import Exa from "exa-js";
 
-export interface ActionState {
+type ActionState = {
   success?: boolean;
   error?: string;
   message?: string;
@@ -18,9 +18,9 @@ export interface ActionState {
     currentUrl?: string;
     lastAdded?: string;
   };
-}
+};
 
-interface BookmarkData {
+type BookmarkData = {
   title: string;
   description: string;
   url: string;
@@ -34,9 +34,9 @@ interface BookmarkData {
   isArchived: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-interface GeneratedContent {
+type GeneratedContent = {
   title: string;
   description: string;
   url: string;
@@ -46,19 +46,25 @@ interface GeneratedContent {
   ogImage: string;
   slug: string;
   error?: string;
-}
+};
 
 // Category Actions
 export async function createCategory(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    name: string;
+    description: string;
+    slug: string;
+    color: string;
+    icon: string;
+  },
 ): Promise<ActionState> {
   try {
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const slug = formData.get("slug") as string;
-    const color = formData.get("color") as string;
-    const icon = formData.get("icon") as string;
+    const name = formData.name;
+    const description = formData.description;
+    const slug = formData.slug;
+    const color = formData.color;
+    const icon = formData.icon;
     const id = slug; // Using slug as the ID since it's unique
 
     await db.insert(categories).values({
@@ -81,23 +87,30 @@ export async function createCategory(
 
 export async function updateCategory(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    id: string;
+    name: string;
+    description: string;
+    slug: string;
+    color: string;
+    icon: string;
+  },
 ): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
     }
 
-    const id = formData.get("id") as string;
+    const id = formData.id;
     if (!id) {
       return { error: "No category ID provided" };
     }
 
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const slug = formData.get("slug") as string;
-    const color = formData.get("color") as string;
-    const icon = formData.get("icon") as string;
+    const name = formData.name;
+    const description = formData.description;
+    const slug = formData.slug;
+    const color = formData.color;
+    const icon = formData.icon;
 
     await db
       .update(categories)
@@ -122,14 +135,16 @@ export async function updateCategory(
 
 export async function deleteCategory(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    id: string;
+  },
 ): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
     }
 
-    const id = formData.get("id");
+    const id = formData.id;
     if (!id) {
       return { error: "No category ID provided" };
     }
@@ -150,20 +165,32 @@ export async function deleteCategory(
 // Bookmark Actions
 export async function createBookmark(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    title: string;
+    description: string;
+    url: string;
+    slug: string;
+    overview: string;
+    favicon: string;
+    ogImage: string;
+    search_results: string;
+    categoryId: string;
+    isFavorite: string;
+    isArchived: string;
+  },
 ): Promise<ActionState> {
   try {
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const url = formData.get("url") as string;
-    let slug = formData.get("slug") as string;
-    const overview = formData.get("overview") as string;
-    const favicon = formData.get("favicon") as string;
-    const ogImage = formData.get("ogImage") as string;
-    const search_results = formData.get("search_results") as string;
-    const categoryId = formData.get("categoryId") as string;
-    const isFavorite = formData.get("isFavorite") === "true";
-    const isArchived = formData.get("isArchived") === "true";
+    const title = formData.title;
+    const description = formData.description;
+    const url = formData.url;
+    let slug = formData.slug;
+    const overview = formData.overview;
+    const favicon = formData.favicon;
+    const ogImage = formData.ogImage;
+    const search_results = formData.search_results;
+    const categoryId = formData.categoryId;
+    const isFavorite = formData.isFavorite === "true";
+    const isArchived = formData.isArchived === "true";
 
     // Generate slug if not provided
     if (!slug) {
@@ -196,29 +223,42 @@ export async function createBookmark(
 
 export async function updateBookmark(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    id: string;
+    title: string;
+    description: string;
+    url: string;
+    slug: string;
+    overview: string;
+    favicon: string;
+    ogImage: string;
+    search_results: string;
+    categoryId: string;
+    isFavorite: string;
+    isArchived: string;
+  },
 ): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
     }
 
-    const id = formData.get("id");
+    const id = formData.id;
     if (!id) {
       return { error: "No bookmark ID provided" };
     }
 
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const url = formData.get("url") as string;
-    let slug = formData.get("slug") as string;
-    const overview = formData.get("overview") as string;
-    const favicon = formData.get("favicon") as string;
-    const ogImage = formData.get("ogImage") as string;
-    const search_results = formData.get("search_results") as string;
-    const categoryId = formData.get("categoryId") as string;
-    const isFavorite = formData.get("isFavorite") === "true";
-    const isArchived = formData.get("isArchived") === "true";
+    const title = formData.title;
+    const description = formData.description;
+    const url = formData.url;
+    let slug = formData.slug;
+    const overview = formData.overview;
+    const favicon = formData.favicon;
+    const ogImage = formData.ogImage;
+    const search_results = formData.search_results;
+    const categoryId = formData.categoryId;
+    const isFavorite = formData.isFavorite === "true";
+    const isArchived = formData.isArchived === "true";
 
     // Generate slug if not provided
     if (!slug) {
@@ -254,19 +294,22 @@ export async function updateBookmark(
 
 export async function deleteBookmark(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    id: string;
+    url: string;
+  },
 ): Promise<ActionState> {
   try {
     if (!formData) {
       return { error: "No form data provided" };
     }
 
-    const id = formData.get("id");
+    const id = formData.id;
     if (!id) {
       return { error: "No bookmark ID provided" };
     }
 
-    const url = formData.get("url") as string;
+    const url = formData.url;
 
     await db.delete(bookmarks).where(eq(bookmarks.id, Number(id)));
 
@@ -281,15 +324,28 @@ export async function deleteBookmark(
   }
 }
 
-// Helper function to delay execution
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Helper function to handle errors
+type ErrorResponse = {
+  message: string;
+  status: number;
+};
+
+export async function handleError(error: Error | ErrorResponse): Promise<{ message: string }> {
+  if (error instanceof Error) {
+    return { message: error.message };
+  } else {
+    return { message: error.message };
+  }
+}
 
 export async function bulkUploadBookmarks(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    urls: string;
+  },
 ): Promise<ActionState> {
   try {
-    const urls = formData.get("urls") as string;
+    const urls = formData.urls;
     if (!urls) {
       return { error: "No URLs provided" };
     }
@@ -303,7 +359,7 @@ export async function bulkUploadBookmarks(
       if (!url) continue;
 
       try {
-        const content = await generateContent(url, null);
+        const content = await generateContent(url);
         if (content.error) {
           errorCount++;
           continue;
@@ -370,10 +426,12 @@ export async function bulkUploadBookmarks(
 // URL Scraping Action
 export async function scrapeUrl(
   prevState: ActionState | null,
-  formData: FormData,
+  formData: {
+    url: string;
+  },
 ): Promise<ActionState> {
   try {
-    const url = formData.get("url") as string;
+    const url = formData.url;
     if (!url) return { error: "URL is required" };
 
     // Get metadata from our API
@@ -437,7 +495,6 @@ export async function scrapeUrl(
 
 export async function generateContent(
   url: string,
-  _: null,
 ): Promise<GeneratedContent> {
   try {
     if (!url) {

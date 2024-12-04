@@ -1,9 +1,6 @@
 'use client';
 
-import { useFormStatus } from 'react-dom';
-import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import Image from 'next/image';
 
 interface ResultDisplayProps {
   metadata: {
@@ -33,12 +30,12 @@ export function ResultDisplay({ metadata, error }: ResultDisplayProps) {
     <div className="space-y-4 rounded-lg border p-4">
       <div className="flex items-center gap-2">
         {metadata.favicon && (
-          <img
+          <Image
             src={metadata.favicon}
             alt="Site favicon"
-            className="h-4 w-4"
             width={16}
             height={16}
+            className="h-4 w-4"
           />
         )}
         <h3 className="font-medium">{metadata.title}</h3>
@@ -49,12 +46,12 @@ export function ResultDisplay({ metadata, error }: ResultDisplayProps) {
       )}
 
       {metadata.ogImage && (
-        <img
+        <Image
           src={metadata.ogImage}
           alt="Open Graph preview"
-          className="rounded-lg"
           width={300}
           height={200}
+          className="rounded-lg"
         />
       )}
 

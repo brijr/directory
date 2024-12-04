@@ -99,9 +99,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(metadata);
   } catch (error) {
-    console.error("Error fetching metadata:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error("Error fetching metadata:", errorMessage);
     return NextResponse.json(
-      { error: "Failed to fetch or parse metadata" },
+      { error: `Failed to fetch or parse metadata: ${errorMessage}` },
       { status: 500 },
     );
   }

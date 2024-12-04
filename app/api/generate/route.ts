@@ -48,9 +48,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ overview: text });
   } catch (error) {
-    console.error("Error generating overview:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("Error generating overview:", errorMessage);
     return NextResponse.json(
-      { error: "Failed to generate overview" },
+      { error: `Failed to generate overview: ${errorMessage}` },
       { status: 500 },
     );
   }
