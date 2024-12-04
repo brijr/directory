@@ -18,7 +18,9 @@ export default async function AdminPage() {
           {/* Header */}
           <div className="flex items-center justify-between border-b pb-8">
             <div className="space-y-1">
-              <h1 className="text-4xl font-bold tracking-tight">Admin Dashboard</h1>
+              <h1 className="text-4xl font-bold tracking-tight">
+                Admin Dashboard
+              </h1>
               <p className="text-lg text-muted-foreground">
                 Manage your bookmarks and categories
               </p>
@@ -64,7 +66,9 @@ export default async function AdminPage() {
               </TabsList>
               <Card className="flex items-center gap-2 p-2">
                 <Settings2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Admin Controls</span>
+                <span className="text-sm text-muted-foreground">
+                  Admin Controls
+                </span>
               </Card>
             </div>
 
@@ -77,7 +81,10 @@ export default async function AdminPage() {
                   </p>
                 </div>
                 <div className="p-6">
-                  <BookmarkManager bookmarks={bookmarks} categories={categories} />
+                  <BookmarkManager
+                    bookmarks={bookmarks}
+                    categories={categories}
+                  />
                 </div>
               </div>
             </TabsContent>

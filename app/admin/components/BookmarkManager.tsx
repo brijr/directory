@@ -45,7 +45,6 @@ import { Loader2 } from "lucide-react";
 import { Upload } from "lucide-react";
 import { Trash2 } from "lucide-react";
 import type { Category, Bookmark } from "@/db/schema";
-import Image from "next/image";
 
 interface BookmarkWithCategory extends Bookmark {
   category: Category | null;
@@ -567,7 +566,7 @@ export function BookmarkManager({
                     <div className="space-y-2">
                       <Label htmlFor="favicon">Favicon URL</Label>
                       <div className="flex items-center gap-2">
-                        <Image
+                        <img
                           src={formData.favicon || "/favicon.ico"}
                           alt="Favicon"
                           width={20}
@@ -605,10 +604,9 @@ export function BookmarkManager({
                           }
                         />
                         <div className="relative aspect-video w-full overflow-hidden rounded-md border">
-                          <Image
+                          <img
                             src={formData.ogImage || "/placeholder.jpg"}
                             alt="OG Image"
-                            fill
                             className="object-cover"
                           />
                         </div>
@@ -728,7 +726,7 @@ export function BookmarkManager({
             <TableRow key={bookmark.id}>
               <TableCell>
                 <div className="flex items-start gap-2">
-                  <Image
+                  <img
                     src={bookmark.favicon || "/favicon.ico"}
                     alt="Favicon"
                     width={20}
