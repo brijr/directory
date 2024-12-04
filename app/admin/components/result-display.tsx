@@ -1,6 +1,4 @@
-'use client';
-
-import Image from 'next/image';
+"use client";
 
 interface ResultDisplayProps {
   metadata: {
@@ -30,7 +28,7 @@ export function ResultDisplay({ metadata, error }: ResultDisplayProps) {
     <div className="space-y-4 rounded-lg border p-4">
       <div className="flex items-center gap-2">
         {metadata.favicon && (
-          <Image
+          <img
             src={metadata.favicon}
             alt="Site favicon"
             width={16}
@@ -46,7 +44,7 @@ export function ResultDisplay({ metadata, error }: ResultDisplayProps) {
       )}
 
       {metadata.ogImage && (
-        <Image
+        <img
           src={metadata.ogImage}
           alt="Open Graph preview"
           width={300}
