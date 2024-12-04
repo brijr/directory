@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/public/logo.svg";
 import "./globals.css";
-import { Inter as Font } from "next/font/google";
+import { Manrope as Font } from "next/font/google";
 
 import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
