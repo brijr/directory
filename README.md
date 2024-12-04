@@ -80,8 +80,45 @@ cp .env.example .env
 
 Required environment variables:
 
-- `DATABASE_URL`: Your SQLite database URL
-- `ANTHROPIC_API_KEY`: For AI-powered features (optional)
+### Database Configuration
+
+- `TURSO_DATABASE_URL`: Your Turso SQLite database URL
+- `TURSO_AUTH_TOKEN`: Authentication token for Turso database access
+
+### Authentication
+
+- `ADMIN_PASSWORD`: Password for accessing the `/admin` routes
+  - Must be at least 8 characters
+  - Used for admin dashboard authentication
+
+### AI Features
+
+- `ANTHROPIC_API_KEY`: Anthropic API key for AI features
+  - Required for content generation
+  - Get one at [Anthropic Console](https://console.anthropic.com)
+- `EXASEARCH_API_KEY`: Exa API key for enhanced search capabilities
+  - Powers the semantic search feature
+  - Get one at [Exa](https://exa.ai)
+
+### Email Features
+
+- `LOOPS_API_KEY`: API key for email subscription functionality
+  - Required for newsletter features
+  - Get one at [Loops](https://loops.so)
+
+### Site Configuration
+
+- `NEXT_PUBLIC_SITE_URL`: Your site's public URL
+  - Format: `https://yourdomain.com`
+  - Used for generating OpenGraph images and links
+
+You can copy the example environment file to get started:
+
+```bash
+cp .env.example .env
+```
+
+Then replace each value with your actual credentials. Make sure to keep your `.env` file secure and never commit it to version control.
 
 4. Initialize the database:
 
@@ -196,6 +233,7 @@ The admin dashboard at `/admin` provides a powerful interface for managing your 
 The admin interface includes AI-powered features using Anthropic:
 
 - **Content Generation**
+
   - Automatic description generation
   - Overview and context extraction
   - Search-optimized content suggestions
