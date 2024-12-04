@@ -503,17 +503,21 @@ export async function generateContent(url: string): Promise<GeneratedContent> {
     // Get the base URL for the API
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL // Add support for custom domain
+      ? process.env.NEXT_PUBLIC_SITE_URL
       : process.env.NODE_ENV === "development"
         ? "http://localhost:3000"
-        : "";
+        : ""; // Empty string will make the fetch relative to current origin
+
+    // Use relative URL if baseUrl is empty (will use current origin)
+    const metadataUrl = baseUrl
+      ? `${baseUrl}/api/metadata?url=${encodeURIComponent(url)}`
+      : `/api/metadata?url=${encodeURIComponent(url)}`;
 
     // First, fetch metadata from our API
-    const metadataResponse = await fetch(
-      `${baseUrl}/api/metadata?url=${encodeURIComponent(url)}`,
-      {
-        method: "GET",
-      },
-    );
+    const metadataResponse = await fetch(metadataUrl, {
+      method: "GET",
+    });
 
     if (!metadataResponse.ok) {
       const errorData = await metadataResponse.json().catch(() => ({}));
