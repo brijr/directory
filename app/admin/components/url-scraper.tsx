@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ResultDisplay } from "./ResultDisplay";
+import { ResultDisplay } from "./result-display";
 import { scrapeUrl } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

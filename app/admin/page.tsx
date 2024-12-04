@@ -2,8 +2,8 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { getAllCategories, getAllBookmarks } from "@/lib/data";
-import { CategoryManager } from "./components/CategoryManager";
-import { BookmarkManager } from "./components/BookmarkManager";
+import { CategoryManager } from "./components/category-manager";
+import { BookmarkManager } from "./components/bookmark-manager";
 import { Section, Container } from "@/components/craft";
 import { Bookmark, FolderKanban, Settings2 } from "lucide-react";
 
