@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from 'next/image'
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Star, Archive, ExternalLink, Bookmark } from "lucide-react";
@@ -69,7 +68,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
         aria-label={`View details for ${bookmark.title}`}
       >
         {bookmark.ogImage ? (
-          <Image 
+          <img
             src={bookmark.ogImage}
             alt="Open Graph preview"
             width={300}
@@ -106,7 +105,7 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
           {/* Category and Site Info */}
           <div className="flex items-center gap-2">
             {bookmark.favicon ? (
-              <Image 
+              <img
                 src={bookmark.favicon}
                 alt="Site favicon"
                 width={16}

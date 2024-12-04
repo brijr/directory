@@ -1,7 +1,6 @@
 // Next Imports
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from 'next/image'
 import Balancer from "react-wrap-balancer";
 
 // Database Imports
@@ -88,7 +87,7 @@ export default async function Page({ params }: Props) {
         <div className="overflow-hidden rounded-xl border bg-muted">
           <div className="relative aspect-[21/9]">
             {bookmark.ogImage ? (
-              <Image 
+              <img
                 src={bookmark.ogImage}
                 alt="Open Graph preview"
                 width={300}
@@ -122,7 +121,7 @@ export default async function Page({ params }: Props) {
                 )}
               </div>
               {bookmark.favicon ? (
-                <Image 
+                <img
                   src={bookmark.favicon}
                   alt="Site favicon"
                   width={16}
