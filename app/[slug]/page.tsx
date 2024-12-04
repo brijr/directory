@@ -11,7 +11,7 @@ import { Section } from "@/components/craft";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Calendar, Clock } from "lucide-react";
+import { ExternalLink, Calendar, Bookmark } from "lucide-react";
 
 // Metadata
 import { Metadata, ResolvingMetadata } from "next";
@@ -35,12 +35,18 @@ export async function generateMetadata(
 
   return {
     title: `${bookmark.title} | Directory`,
-    description: bookmark.description || bookmark.overview || `A curated bookmark from Directory`,
+    description:
+      bookmark.description ||
+      bookmark.overview ||
+      `A curated bookmark from Directory`,
     openGraph: {
       title: bookmark.title,
       description: bookmark.description || bookmark.overview || undefined,
       url: bookmark.url,
-      images: [...(bookmark.ogImage ? [bookmark.ogImage] : []), ...previousImages],
+      images: [
+        ...(bookmark.ogImage ? [bookmark.ogImage] : []),
+        ...previousImages,
+      ],
     },
     twitter: {
       card: "summary_large_image",
@@ -77,34 +83,32 @@ export default async function Page({ params }: Props) {
           </Button>
         </div>
 
-        {/* Preview Image */}
-        {bookmark.ogImage && (
-          <div className="overflow-hidden rounded-xl border bg-muted">
-            <div className="relative aspect-[21/9]">
+        {/* Preview Image or Fallback */}
+        <div className="overflow-hidden rounded-xl border bg-muted">
+          <div className="relative aspect-[21/9]">
+            {bookmark.ogImage ? (
               <img
                 src={bookmark.ogImage}
                 alt={`Preview of ${bookmark.title}`}
                 className="h-full w-full object-cover"
                 loading="eager"
               />
-            </div>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">
+                <Bookmark
+                  className="h-16 w-16 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Header Content */}
         <div className="space-y-6">
           <div className="space-y-4">
             {/* Title and Favicon */}
-            <div className="flex items-start gap-3">
-              {bookmark.favicon && (
-                <img
-                  src={bookmark.favicon}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-lg border bg-background p-1"
-                />
-              )}
+            <div className="flex items-center gap-3">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">
                   <Balancer>{bookmark.title}</Balancer>
@@ -115,6 +119,22 @@ export default async function Page({ params }: Props) {
                   </p>
                 )}
               </div>
+              {bookmark.favicon ? (
+                <img
+                  src={bookmark.favicon}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-lg border bg-background p-1"
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background p-1">
+                  <Bookmark
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Metadata */}
@@ -122,7 +142,8 @@ export default async function Page({ params }: Props) {
               {bookmark.category && (
                 <Badge
                   style={{
-                    backgroundColor: bookmark.category.color || 'hsl(var(--primary))',
+                    backgroundColor:
+                      bookmark.category.color || "hsl(var(--primary))",
                     color: "white",
                   }}
                   className="h-6 gap-1 px-2 text-sm"
@@ -150,10 +171,16 @@ export default async function Page({ params }: Props) {
                 </h2>
                 <Markdown
                   components={{
-                    // Add custom styling to markdown elements
-                    p: ({children}) => <p className="my-4 leading-relaxed">{children}</p>,
-                    a: ({children, href}) => (
-                      <a href={href} target="_blank" rel="noopener noreferrer" className="font-medium underline decoration-accent decoration-2 underline-offset-2">
+                    p: ({ children }) => (
+                      <p className="my-4 leading-relaxed">{children}</p>
+                    ),
+                    a: ({ children, href }) => (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium underline decoration-accent decoration-2 underline-offset-2"
+                      >
                         {children}
                       </a>
                     ),
@@ -169,9 +196,7 @@ export default async function Page({ params }: Props) {
         {/* Bottom Actions */}
         <div className="flex justify-center gap-4 pt-4">
           <Button asChild size="lg" variant="secondary">
-            <Link href="/">
-              Browse More
-            </Link>
+            <Link href="/">Browse More</Link>
           </Button>
           <Button asChild size="lg">
             <Link
