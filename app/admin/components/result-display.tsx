@@ -5,57 +5,60 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ScrapeResult {
-  error: string | null;
-  data?: {
+interface ResultDisplayProps {
+  metadata: {
     title: string;
     description: string;
     favicon: string;
     ogImage: string;
-  };
+    url: string;
+  } | null;
+  error: string | null;
 }
 
-interface ResultDisplayProps {
-  metadata: ScrapeResult | null;
-}
-
-export function ResultDisplay({ metadata }: ResultDisplayProps) {
-  const { pending } = useFormStatus();
-
-  if (pending) {
+export function ResultDisplay({ metadata, error }: ResultDisplayProps) {
+  if (error) {
     return (
-      <Card className="mt-6">
-        <CardContent className="pt-6">
-          <Skeleton className="h-4 w-3/4 mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6" />
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border border-destructive p-4">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
     );
   }
 
-  if (!metadata) return null;
-
-  if (metadata.error) {
-    return (
-      <Alert variant="destructive" className="mt-6">
-        <AlertDescription>
-          {metadata.error}
-        </AlertDescription>
-      </Alert>
-    );
+  if (!metadata) {
+    return null;
   }
 
   return (
-    <Card className="mt-6">
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Scraping Results</h2>
-          <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-[600px] text-sm">
-            {JSON.stringify(metadata.data, null, 2)}
-          </pre>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4 rounded-lg border p-4">
+      <div className="flex items-center gap-2">
+        {metadata.favicon && (
+          <img
+            src={metadata.favicon}
+            alt="Site favicon"
+            className="h-4 w-4"
+            width={16}
+            height={16}
+          />
+        )}
+        <h3 className="font-medium">{metadata.title}</h3>
+      </div>
+
+      {metadata.description && (
+        <p className="text-sm text-muted-foreground">{metadata.description}</p>
+      )}
+
+      {metadata.ogImage && (
+        <img
+          src={metadata.ogImage}
+          alt="Open Graph preview"
+          className="rounded-lg"
+          width={300}
+          height={200}
+        />
+      )}
+
+      <p className="text-xs text-muted-foreground">{metadata.url}</p>
+    </div>
   );
 }

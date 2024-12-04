@@ -40,10 +40,36 @@ import {
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, X, Upload } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { Trash2 } from "lucide-react";
-import type { Category, Bookmark } from "@/db/schema";
+import { Plus, X, Upload, Loader2, Trash2 } from "lucide-react";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+}
+
+interface Bookmark {
+  id: string;
+  title: string;
+  slug: string;
+  url: string;
+  description: string | null;
+  overview: string | null;
+  search_results: string | null;
+  favicon: string | null;
+  ogImage: string | null;
+  categoryId: string | null;
+  isFavorite: boolean;
+  isArchived: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  notes: string | null;
+}
 
 interface BookmarkWithCategory extends Bookmark {
   category: Category | null;
@@ -282,26 +308,17 @@ export function BookmarkManager({
 
   const handleBulkUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsUploading(true);
+    const formData = new FormData(e.currentTarget);
+    const result = await bulkUploadBookmarks(null, formData);
 
-    try {
-      const formData = new FormData(e.currentTarget);
-      const result = await bulkUploadBookmarks(formData, null);
-
-      if (result.success) {
-        toast.success(result.message || "Bookmarks uploaded successfully");
-        setIsBulkSheetOpen(false);
-      } else {
-        toast.error(result.error || "Failed to upload bookmarks");
-      }
-
-      setBulkUploadState(result);
-    } catch (err) {
-      console.error("Error uploading bookmarks:", err);
-      toast.error("Failed to upload bookmarks");
-    } finally {
-      setIsUploading(false);
+    if (result.success) {
+      toast.success(result.message || "Bookmarks uploaded successfully");
+      setIsBulkSheetOpen(false);
+    } else {
+      toast.error(result.error || "Failed to upload bookmarks");
     }
+
+    setBulkUploadState(result);
   };
 
   return (

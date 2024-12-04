@@ -6,24 +6,12 @@ import { scrapeUrl } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner"; // Assuming toast is imported from here
-
-interface ScrapeResult {
-  error: string | null;
-  data?: {
-    title: string;
-    description: string;
-    favicon: string;
-    ogImage: string;
-  };
-}
+import { toast } from "sonner";
+import type { ActionState } from "../actions";
 
 export function URLScraper() {
-  const [url, setUrl] = useState(""); // New state variable for URL
-  const [metadata, setMetadata] = useState<ScrapeResult | null>(null); // New state variable for metadata
-  const onMetadataReceived = (data: ScrapeResult) => {
-    setMetadata(data);
-  };
+  const [url, setUrl] = useState("");
+  const [metadata, setMetadata] = useState<ActionState | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +27,10 @@ export function URLScraper() {
 
       const response = await scrapeUrl(null, formData);
       if (response?.data) {
-        onMetadataReceived(response);
+        setMetadata(response);
+        toast.success("Successfully fetched metadata");
+      } else if (response?.error) {
+        toast.error(response.error);
       } else {
         toast.error("Failed to fetch metadata");
       }
@@ -76,7 +67,7 @@ export function URLScraper() {
           Scrape URL
         </Button>
 
-        <ResultDisplay metadata={metadata} />
+        {metadata && <ResultDisplay metadata={metadata.data} error={metadata.error || null} />}
       </form>
     </div>
   );
