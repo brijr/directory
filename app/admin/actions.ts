@@ -20,6 +20,34 @@ export interface ActionState {
   };
 }
 
+interface BookmarkData {
+  title: string;
+  description: string;
+  url: string;
+  overview: string;
+  search_results: string;
+  favicon: string;
+  ogImage: string;
+  slug: string;
+  categoryId: string | null;
+  isFavorite: boolean;
+  isArchived: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface GeneratedContent {
+  title: string;
+  description: string;
+  url: string;
+  overview: string;
+  search_results: string;
+  favicon: string;
+  ogImage: string;
+  slug: string;
+  error?: string;
+}
+
 // Category Actions
 export async function createCategory(
   prevState: ActionState | null,
@@ -281,16 +309,16 @@ export async function bulkUploadBookmarks(
           continue;
         }
 
-        // Ensure all required fields are strings
-        const bookmarkData = {
-          title: content.title || "",
-          description: content.description || "",
-          url: content.url || "",
-          overview: content.overview || "",
-          search_results: content.search_results || "",
-          favicon: content.favicon || "",
-          ogImage: content.ogImage || "",
-          slug: content.slug || "",
+        // Create bookmark data with proper types
+        const bookmarkData: BookmarkData = {
+          title: content.title,
+          description: content.description,
+          url: content.url,
+          overview: content.overview,
+          search_results: content.search_results,
+          favicon: content.favicon,
+          ogImage: content.ogImage,
+          slug: content.slug,
           categoryId: null,
           isFavorite: false,
           isArchived: false,
@@ -407,7 +435,10 @@ export async function scrapeUrl(
   }
 }
 
-export async function generateContent(url: string, _: null) {
+export async function generateContent(
+  url: string,
+  _: null,
+): Promise<GeneratedContent> {
   try {
     if (!url) {
       throw new Error("URL is required");
@@ -480,6 +511,14 @@ export async function generateContent(url: string, _: null) {
   } catch (error) {
     console.error("Error generating content:", error);
     return {
+      title: "",
+      description: "",
+      url: url,
+      overview: "",
+      search_results: "",
+      favicon: "",
+      ogImage: "",
+      slug: "",
       error:
         error instanceof Error ? error.message : "Failed to generate content",
     };
