@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     if (!url || !searchResults) {
       return NextResponse.json(
         { error: "URL and search results are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,7 +44,6 @@ export async function POST(request: Request) {
         },
       ],
       temperature: 0.7,
-      max_tokens: 500,
     });
 
     return NextResponse.json({ overview: text });
@@ -52,7 +51,7 @@ export async function POST(request: Request) {
     console.error("Error generating overview:", error);
     return NextResponse.json(
       { error: "Failed to generate overview" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

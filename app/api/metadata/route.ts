@@ -15,25 +15,29 @@ export async function GET(request: Request) {
     try {
       validUrl = new URL(url);
       // Add https if no protocol is specified
-      if (!validUrl.protocol || validUrl.protocol === ':') {
+      if (!validUrl.protocol || validUrl.protocol === ":") {
         validUrl = new URL(`https://${url}`);
       }
     } catch (e) {
-      return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid URL format" },
+        { status: 400 },
+      );
     }
 
-    console.log('Fetching metadata for URL:', validUrl.toString());
+    console.log("Fetching metadata for URL:", validUrl.toString());
 
     const response = await fetch(validUrl.toString(), {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; DirectoryBot/1.0; +http://localhost)',
+        "User-Agent":
+          "Mozilla/5.0 (compatible; DirectoryBot/1.0; +http://localhost)",
       },
     });
 
     if (!response.ok) {
       return NextResponse.json(
         { error: `Failed to fetch URL: ${response.statusText}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -52,21 +56,22 @@ export async function GET(request: Request) {
       try {
         faviconUrl = new URL(faviconUrl, validUrl.origin).toString();
       } catch (e) {
-        console.warn('Failed to parse favicon URL:', e);
+        console.warn("Failed to parse favicon URL:", e);
         faviconUrl = "/favicon.ico";
       }
     }
 
     // Get Open Graph image
-    let ogImage = $('meta[property="og:image"]').attr("content") ||
-                 $('meta[name="twitter:image"]').attr("content");
+    let ogImage =
+      $('meta[property="og:image"]').attr("content") ||
+      $('meta[name="twitter:image"]').attr("content");
 
     // Make ogImage URL absolute if it's relative
     if (ogImage && !ogImage.startsWith("http")) {
       try {
         ogImage = new URL(ogImage, validUrl.origin).toString();
       } catch (e) {
-        console.warn('Failed to parse ogImage URL:', e);
+        console.warn("Failed to parse ogImage URL:", e);
         ogImage = "";
       }
     }
@@ -90,14 +95,14 @@ export async function GET(request: Request) {
       url: validUrl.toString(),
     };
 
-    console.log('Generated metadata:', metadata);
+    console.log("Generated metadata:", metadata);
 
     return NextResponse.json(metadata);
   } catch (error) {
     console.error("Error fetching metadata:", error);
     return NextResponse.json(
       { error: "Failed to fetch or parse metadata" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
