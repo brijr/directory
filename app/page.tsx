@@ -10,6 +10,7 @@ import { Main, Section, Container } from "@/components/craft";
 import { BookmarkCard } from "@/components/bookmark-card";
 import { BookmarkGrid } from "@/components/bookmark-grid";
 import { CategoryFilter } from "@/components/category-filter";
+import { EmailForm } from "@/components/email-form";
 
 import Balancer from "react-wrap-balancer";
 
@@ -45,14 +46,19 @@ export default async function Home({
     <Main>
       <Section>
         <Container>
-          <h1 className="text-center !font-semibold !leading-tight">
-            <Balancer>
-              Welcome to the AI-powered Next.js Directory Template by{" "}
-              <a href="https://9d8.dev">9d8</a>
-            </Balancer>
-          </h1>
+          <div className="mx-auto max-w-2xl space-y-8 text-center">
+            <h1>
+              <Balancer>
+                Get the latest resources sent to your inbox weekly
+              </Balancer>
+            </h1>
+            <EmailForm />
+            <p className="text-sm text-muted-foreground">
+              Join 3,300+ freelancers · Unsubscribe anytime
+            </p>
+          </div>
 
-          <div className="space-y-6">
+          <div className="mt-12 space-y-6">
             <Suspense fallback={<div>Loading categories...</div>}>
               <CategoryFilter
                 categories={categories.map((cat) => ({

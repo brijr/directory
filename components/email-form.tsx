@@ -7,10 +7,8 @@ const userGroup = "designengineer.fyi";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-import useMeasure from "react-use-measure";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -19,10 +17,8 @@ import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 
@@ -32,12 +28,9 @@ const formSchema = z.object({
   }),
 });
 
-const transition = { type: "ease", ease: "easeInOut", duration: 0.4 };
-
 export function EmailForm({ label }: { label?: string }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [ref, bounds] = useMeasure();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,104 +72,46 @@ export function EmailForm({ label }: { label?: string }) {
   }
 
   return (
-    <MotionConfig transition={transition}>
-      <motion.div
-        animate={{ height: bounds.height > 0 ? bounds.height : undefined }}
-        transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
-      >
-        <div ref={ref}>
-          <AnimatePresence mode="wait">
-            {!isSubmitted ? (
-              <motion.div
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  ...transition,
-                  duration: transition.duration / 2,
-                }}
-              >
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-2"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{label}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="dieter.rams@gmail.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Enter your email address to subscribe.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <motion.div
-                      initial={{ opacity: 1 }}
-                      animate={{ opacity: isLoading ? 0.5 : 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+    <div>
+      {!isSubmitted ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Your email"
+                        {...field}
+                        className={cn(
+                          "h-12 text-base",
+                          isLoading && "opacity-50",
+                        )}
+                        disabled={isLoading}
+                      />
                       <Button
-                        className={cn("w-[98.52px]")}
                         type="submit"
+                        className="h-12 px-8 text-lg"
                         disabled={isLoading}
                       >
-                        <motion.span
-                          initial={false}
-                          animate={{
-                            opacity: isLoading ? 0 : 1,
-                            y: isLoading ? 10 : 0,
-                          }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          Subscribe
-                        </motion.span>
-                        <motion.span
-                          initial={false}
-                          animate={{
-                            opacity: isLoading ? 1 : 0,
-                            y: isLoading ? 0 : -10,
-                          }}
-                          transition={{ duration: 0.2 }}
-                          style={{
-                            position: "absolute",
-                            display: "inline-block",
-                          }}
-                        >
-                          •••
-                        </motion.span>
+                        Subscribe
                       </Button>
-                    </motion.div>
-                  </form>
-                </Form>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="thank-you"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  ...transition,
-                  duration: transition.duration / 2,
-                  delay: transition.duration / 2,
-                }}
-              >
-                <p className="text-sm">Thank you for subscribing.</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    </MotionConfig>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      ) : (
+        <p className="flex h-12 items-center justify-center text-sm">
+          Thank you for subscribing.
+        </p>
+      )}
+    </div>
   );
 }

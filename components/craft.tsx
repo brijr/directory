@@ -43,6 +43,7 @@ const Main = ({ children, className, id }: MainProps) => {
         "prose:font-sans prose prose-neutral dark:prose-invert xl:prose-lg",
         // Prose Headings
         "prose-headings:font-normal",
+        "prose-h1:font-semibold prose-h1:tracking-tight",
         // Prose Strong
         "prose-strong:font-semibold",
         // Inline Links
