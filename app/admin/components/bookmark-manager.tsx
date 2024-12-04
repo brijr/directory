@@ -252,10 +252,14 @@ export function BookmarkManager({
         return;
       }
 
-      const result = await generateContent(formData, null);
+      // Create a new FormData with just the URL
+      const data = new FormData();
+      data.append("url", url);
+
+      const result = await generateContent(url, null);
 
       if ('error' in result) {
-        toast.error(result.error);
+        toast.error(result.error as string);
       } else {
         setFormData((prev) => ({
           ...prev,

@@ -396,89 +396,52 @@ export async function scrapeUrl(
   }
 }
 
-export async function generateContent(
-  url: string,
-  searchResults: string | null,
-): Promise<{
-  title: string;
-  description: string;
-  url: string;
-  overview: string;
-  search_results: string | null;
-  favicon: string;
-  ogImage: string;
-  slug: string;
-}> {
+export async function generateContent(url: string, _: null) {
   try {
-    // Step 1: Get metadata from our API
+    if (!url) {
+      throw new Error("URL is required");
+    }
+
+    // Get the base URL for the API
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
+      : process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "";
 
+    // First, fetch metadata from our API
     const metadataResponse = await fetch(
       `${baseUrl}/api/metadata?url=${encodeURIComponent(url)}`,
+      {
+        method: "GET",
+      }
     );
+
     if (!metadataResponse.ok) {
-      throw new Error("Failed to fetch metadata");
+      const errorData = await metadataResponse.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to fetch metadata");
     }
+
     const metadata = await metadataResponse.json();
     console.log("API metadata:", metadata); // Debug log
 
-    // Step 2: Get search results from Exa if not provided
-    let finalSearchResults = searchResults;
-    let exaSummary = "";
-    if (!finalSearchResults) {
-      try {
-        const exa = new Exa(process.env.EXASEARCH_API_KEY as string);
-        const results = await exa.search(url);
-        console.log("Exa search results:", results); // Debug log
+    // Generate a slug from the title
+    const slug = generateSlug(metadata.title || "");
 
-        // @ts-expect-error Search results type mismatch
-        if (results?.results?.[0]?.summary) {
-          // @ts-expect-error Summary type mismatch
-          exaSummary = results.results[0].summary;
-        }
-        finalSearchResults = JSON.stringify(results);
-      } catch (error) {
-        console.error("Error fetching Exa search results:", error);
-        throw new Error("Failed to fetch search results");
-      }
-    }
-
-    // Step 3: Generate overview using Claude
-    const response = await fetch(`${baseUrl}/api/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url,
-        searchResults: finalSearchResults,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to generate overview");
-    }
-
-    const data = await response.json();
-
-    // Log the final data being returned
-    const returnData = {
+    return {
       title: metadata.title || "",
-      description: exaSummary || metadata.description || "",
+      description: metadata.description || "",
       url: url,
-      overview: data.overview || "",
-      search_results: finalSearchResults,
+      overview: metadata.overview || "",
+      search_results: null,
       favicon: metadata.favicon || "",
       ogImage: metadata.ogImage || "",
-      slug: metadata.title ? generateSlug(metadata.title) : "",
+      slug: slug,
     };
-    console.log("Generated content:", returnData); // Debug log
-
-    return returnData;
   } catch (error) {
     console.error("Error generating content:", error);
-    throw error;
+    return {
+      error: error instanceof Error ? error.message : "Failed to generate content",
+    };
   }
 }
