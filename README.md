@@ -243,14 +243,6 @@ The admin interface includes AI-powered features using Anthropic:
   - Description summarization
   - Favicon and OpenGraph image detection
 
-### Keyboard Shortcuts
-
-- `⌘ + K` - Open command palette
-- `⌘ + S` - Save current form
-- `⌘ + N` - New bookmark
-- `⌘ + E` - Edit mode
-- `⌘ + D` - Delete selected item
-
 ### API Integration
 
 The admin interface is built on top of Next.js Server Actions, providing:
