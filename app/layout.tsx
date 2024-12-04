@@ -69,8 +69,8 @@ const Header = () => {
             src={Logo}
             className="dark:invert"
             alt="Design Engineer Logo"
-            width={48}
-            height={41.06}
+            width={96}
+            height={39.68}
           />
         </Link>
         <Subscribe />

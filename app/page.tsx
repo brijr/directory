@@ -10,8 +10,7 @@ import { Main, Section, Container } from "@/components/craft";
 import { BookmarkCard } from "@/components/bookmark-card";
 import { BookmarkGrid } from "@/components/bookmark-grid";
 import { CategoryFilter } from "@/components/category-filter";
-import { SearchBar } from "@/components/search-bar";
-import { SearchResultsCounter } from "@/components/search-results-counter";
+
 import Balancer from "react-wrap-balancer";
 
 export default async function Home({
@@ -48,14 +47,12 @@ export default async function Home({
         <Container>
           <h1 className="text-center !font-semibold !leading-tight">
             <Balancer>
-              Welcome to the AI-powered Next.js Directory Template by 9d8
+              Welcome to the AI-powered Next.js Directory Template by{" "}
+              <a href="https://9d8.dev">9d8</a>
             </Balancer>
           </h1>
 
           <div className="space-y-6">
-            <SearchBar />
-            <SearchResultsCounter totalResults={filteredBookmarks.length} />
-
             <Suspense fallback={<div>Loading categories...</div>}>
               <CategoryFilter
                 categories={categories.map((cat) => ({
@@ -64,6 +61,7 @@ export default async function Home({
                   color: cat.color || undefined,
                   icon: cat.icon || undefined,
                 }))}
+                totalResults={filteredBookmarks.length}
               />
             </Suspense>
 

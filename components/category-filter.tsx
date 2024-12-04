@@ -3,7 +3,11 @@
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDebouncedCallback } from "use-debounce";
+import { useTransition } from "react";
 
 interface Category {
   id: string;
@@ -12,10 +16,17 @@ interface Category {
   icon?: string;
 }
 
-export const CategoryFilter = ({ categories }: { categories: Category[] }) => {
+interface CategoryFilterProps {
+  categories: Category[];
+  totalResults: number;
+}
+
+export const CategoryFilter = ({ categories, totalResults }: CategoryFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
+  const searchTerm = searchParams.get("search");
+  const [isPending, startTransition] = useTransition();
 
   const handleCategoryClick = (categoryId: string | null) => {
     const params = new URLSearchParams(searchParams);
@@ -27,41 +38,76 @@ export const CategoryFilter = ({ categories }: { categories: Category[] }) => {
     router.push(`/?${params.toString()}`);
   };
 
+  const handleSearch = useDebouncedCallback((term: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (term) {
+      params.set("search", term);
+    } else {
+      params.delete("search");
+    }
+    startTransition(() => {
+      router.push(`/?${params.toString()}`);
+    });
+  }, 300);
+
   return (
-    <div className="sticky top-4 z-10 mb-4 flex flex-wrap items-center gap-2 border bg-card p-2 shadow-sm">
-      <p className="sr-only">Filter by category:</p>
-      <Button
-        variant={currentCategory === null ? "default" : "outline"}
-        size="sm"
-        onClick={() => handleCategoryClick(null)}
-        className="min-w-[60px]"
-      >
-        All
-      </Button>
-      {categories.map((category) => (
+    <div className="sticky top-4 z-10 mb-4 space-y-2 border bg-card p-2 shadow-sm">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            defaultValue={searchParams.get("search") ?? ""}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search..."
+            className="pl-8 h-8"
+          />
+          {isPending && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-foreground"></div>
+            </div>
+          )}
+        </div>
         <Button
-          key={category.id}
-          variant={currentCategory === category.id ? "default" : "outline"}
+          variant={currentCategory === null ? "default" : "outline"}
           size="sm"
-          onClick={() => handleCategoryClick(category.id)}
-          className={cn(
-            "min-w-[60px]",
-            currentCategory !== category.id && "hover:border-current"
-          )}
-          style={{
-            '--category-color': category.color || 'currentColor',
-            borderColor: currentCategory !== category.id ? category.color : undefined,
-            color: currentCategory !== category.id ? category.color : undefined,
-          } as React.CSSProperties}
+          onClick={() => handleCategoryClick(null)}
+          className="min-w-[60px]"
         >
-          {category.icon && (
-            <span className="mr-1" role="img" aria-label={category.name}>
-              {category.icon}
-            </span>
-          )}
-          {category.name}
+          All
         </Button>
-      ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {categories.map((category) => (
+          <Button
+            key={category.id}
+            variant={currentCategory === category.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleCategoryClick(category.id)}
+            className={cn(
+              "min-w-[60px]",
+              currentCategory !== category.id && "hover:border-current"
+            )}
+            style={{
+              '--category-color': category.color || 'currentColor',
+              borderColor: currentCategory !== category.id ? category.color : undefined,
+              color: currentCategory !== category.id ? category.color : undefined,
+            } as React.CSSProperties}
+          >
+            {category.icon && (
+              <span className="mr-1" role="img" aria-label={category.name}>
+                {category.icon}
+              </span>
+            )}
+            {category.name}
+          </Button>
+        ))}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        Found {totalResults} resource{totalResults !== 1 ? "s" : ""}
+        {searchTerm && ` matching "${searchTerm}"`}
+        {currentCategory && ` in selected category`}
+      </div>
     </div>
   );
 };
