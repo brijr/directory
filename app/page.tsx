@@ -54,7 +54,7 @@ export default async function Home({
             </h1>
             <EmailForm />
             <p className="text-sm text-muted-foreground">
-              Join 3,300+ freelancers · Unsubscribe anytime
+              Join 1,998+ developers · Unsubscribe anytime
             </p>
           </div>
 
