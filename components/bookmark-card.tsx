@@ -1,8 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Star, Archive, ExternalLink } from "lucide-react";
+import { Star, Archive, ExternalLink, Bookmark } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface BookmarkCardProps {
@@ -30,84 +29,124 @@ export const BookmarkCard = ({ bookmark }: BookmarkCardProps) => {
   return (
     <div
       className={cn(
-        "not-prose group relative grid gap-2 rounded-md",
-        "border bg-accent/50 p-1.5",
-        "transition-all hover:bg-accent",
-        bookmark.isArchived && "opacity-60",
+        "group relative overflow-hidden rounded-xl border bg-card",
+        "transition-all duration-300 hover:shadow-lg",
+        "hover:ring-2 hover:ring-accent hover:ring-offset-2",
+        bookmark.isArchived && "opacity-75 hover:opacity-100",
       )}
     >
-      {/* Status Icons */}
-      <div className="absolute right-2 top-2 flex gap-1">
+      {/* Status Indicators */}
+      <div className="absolute right-3 top-3 z-10 flex gap-1.5">
         {bookmark.isFavorite && (
           <Badge
             variant="secondary"
-            className="bg-yellow-500/10 text-yellow-500"
+            className="bg-yellow-500/10 text-yellow-500 backdrop-blur-sm"
           >
-            <Star className="h-3 w-3" />
+            <Star className="h-3 w-3" aria-label="Favorite bookmark" />
           </Badge>
         )}
         {bookmark.isArchived && (
-          <Badge variant="secondary" className="bg-gray-500/10 text-gray-500">
-            <Archive className="h-3 w-3" />
+          <Badge
+            variant="secondary"
+            className="bg-gray-500/10 text-gray-500 backdrop-blur-sm"
+          >
+            <Archive className="h-3 w-3" aria-label="Archived bookmark" />
           </Badge>
         )}
       </div>
 
       {/* Card Content */}
-      <Link href={`/${bookmark.slug}`} className="space-y-3">
-        {/* Preview Image */}
-        <div className="relative aspect-video w-full overflow-hidden rounded border">
-          <img
-            src={bookmark.ogImage || "/placeholder.jpg"}
-            alt={bookmark.title}
-            className="object-cover"
-          />
+      <Link
+        href={`/${bookmark.slug}`}
+        className="block space-y-3"
+        aria-label={`View details for ${bookmark.title}`}
+      >
+        {/* Preview Image Container */}
+        <div className="relative aspect-video w-full overflow-hidden">
+          {bookmark.ogImage ? (
+            <img
+              src={bookmark.ogImage}
+              alt={`Preview of ${bookmark.title}`}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-muted">
+              <Bookmark className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+            </div>
+          )}
         </div>
 
-        {/* Title and Description */}
-        <div className="flex items-start gap-2">
-          <img
-            src={bookmark.favicon || "/favicon.ico"}
-            alt=""
-            width={16}
-            height={16}
-            className="h-4 w-4"
-          />
-          <div className="space-y-1">
-            <h2 className="font-medium leading-tight">{bookmark.title}</h2>
-            {bookmark.description && (
-              <p className="line-clamp-2 text-sm text-muted-foreground">
-                {bookmark.description}
-              </p>
+        {/* Content Section */}
+        <div className="space-y-3 p-4">
+          {/* Title and Favicon */}
+          <div className="flex items-start gap-2">
+            {bookmark.favicon ? (
+              <img
+                src={bookmark.favicon}
+                alt=""
+                className="h-4 w-4 rounded-sm"
+                loading="lazy"
+              />
+            ) : (
+              <Bookmark className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             )}
+            <div className="space-y-1 flex-1">
+              <h2 className="font-semibold leading-tight tracking-tight">
+                {bookmark.title}
+              </h2>
+              {bookmark.description && (
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                  {bookmark.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Category Badge */}
+          {bookmark.category && (
+            <Badge
+              style={{
+                backgroundColor: bookmark.category.color || 'hsl(var(--primary))',
+                color: "white",
+              }}
+              className="w-fit transition-transform hover:scale-105"
+            >
+              {bookmark.category.icon} {bookmark.category.name}
+            </Badge>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full font-medium"
+              asChild
+            >
+              <Link href={`/${bookmark.slug}`}>
+                View Details
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full font-medium group/link"
+              asChild
+            >
+              <Link
+                href={bookmark.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center"
+              >
+                Visit Site
+                <ExternalLink className="ml-2 h-3 w-3 transition-transform group-hover/link:translate-x-0.5" />
+              </Link>
+            </Button>
           </div>
         </div>
-
-        {/* Category Badge */}
-        {bookmark.category && (
-          <Badge
-            style={{
-              backgroundColor: bookmark.category.color,
-              color: "white",
-            }}
-            className="w-fit"
-          >
-            {bookmark.category.icon} {bookmark.category.name}
-          </Badge>
-        )}
       </Link>
-
-      {/* Action Buttons */}
-      <div className="mt-2 flex gap-2">
-        <Button variant="outline" size="sm" className="w-full" asChild>
-          <Link href={`/${bookmark.slug}`}>View Details</Link>
-        </Button>
-        <Button variant="outline" size="sm" className="w-full" asChild>
-          <Link href={bookmark.url} target="_blank" rel="noopener noreferrer">
-            Visit Site <ExternalLink className="ml-2 h-3 w-3" />
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 };
