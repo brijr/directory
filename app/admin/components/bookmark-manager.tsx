@@ -155,10 +155,28 @@ export function BookmarkManager({
     setIsSaving(true);
 
     try {
-      const formDataToSubmit = new FormData(e.currentTarget);
+      const formData = new FormData(e.currentTarget);
+      const formDataObject = {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        url: formData.get("url") as string,
+        slug: formData.get("slug") as string,
+        overview: formData.get("overview") as string,
+        favicon: formData.get("favicon") as string,
+        ogImage: formData.get("ogImage") as string,
+        search_results: formData.get("search_results") as string,
+        categoryId: formData.get("categoryId") as string,
+        isFavorite: formData.get("isFavorite") as string,
+        isArchived: formData.get("isArchived") as string,
+      };
+
+      if (!isNewBookmark) {
+        (formDataObject as any).id = formData.get("id") as string;
+      }
+
       const result = isNewBookmark
-        ? await createBookmark(null, formDataToSubmit)
-        : await updateBookmark(null, formDataToSubmit);
+        ? await createBookmark(null, formDataObject)
+        : await updateBookmark(null, formDataObject as any);
 
       if (result.error) {
         toast.error(result.error);
@@ -233,9 +251,11 @@ export function BookmarkManager({
     setBookmarkToDelete(bookmark);
 
     try {
-      const formData = new FormData();
-      formData.append("id", bookmark.id.toString());
-      const result = await deleteBookmark(null, formData);
+      const deleteData = {
+        id: bookmark.id.toString(),
+        url: bookmark.url
+      };
+      const result = await deleteBookmark(null, deleteData);
 
       if (result.success) {
         toast.success("Bookmark deleted!");
@@ -282,7 +302,7 @@ export function BookmarkManager({
       const data = new FormData();
       data.append("url", url);
 
-      const result = await generateContent(url, null);
+      const result = await generateContent(url);
 
       if ("error" in result) {
         toast.error(result.error as string);
@@ -309,16 +329,34 @@ export function BookmarkManager({
   const handleBulkUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const result = await bulkUploadBookmarks(null, formData);
-
-    if (result.success) {
-      toast.success(result.message || "Bookmarks uploaded successfully");
-      setIsBulkSheetOpen(false);
-    } else {
-      toast.error(result.error || "Failed to upload bookmarks");
+    const file = formData.get("file") as File;
+    
+    if (!file) {
+      toast.error("Please select a file to upload");
+      return;
     }
 
-    setBulkUploadState(result);
+    try {
+      const text = await file.text();
+      const urls = text
+        .split("\n")
+        .map(url => url.trim())
+        .filter(url => url && !url.toLowerCase().startsWith("url")); // Skip header if present
+
+      const result = await bulkUploadBookmarks(null, { urls: urls.join("\n") });
+
+      if (result.success) {
+        toast.success(result.message || "Bookmarks uploaded successfully");
+        setIsBulkSheetOpen(false);
+      } else {
+        toast.error(result.error || "Failed to upload bookmarks");
+      }
+
+      setBulkUploadState(result);
+    } catch (error) {
+      toast.error("Failed to process the CSV file");
+      console.error(error);
+    }
   };
 
   return (

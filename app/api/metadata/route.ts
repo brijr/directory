@@ -18,7 +18,8 @@ export async function GET(request: Request) {
       if (!validUrl.protocol || validUrl.protocol === ":") {
         validUrl = new URL(`https://${url}`);
       }
-    } catch (e) {
+    } catch (error) {
+      console.error("Invalid URL format:", error);
       return NextResponse.json(
         { error: "Invalid URL format" },
         { status: 400 },
@@ -99,11 +100,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json(metadata);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const statusCode = error instanceof Error ? 500 : (error as { statusCode?: number }).statusCode || 500;
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     console.error("Error fetching metadata:", errorMessage);
     return NextResponse.json(
       { error: `Failed to fetch or parse metadata: ${errorMessage}` },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }

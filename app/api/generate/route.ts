@@ -17,7 +17,8 @@ export async function POST(request: Request) {
     let parsedResults;
     try {
       parsedResults = JSON.parse(searchResults);
-    } catch (e) {
+    } catch (error) {
+      console.warn("Failed to parse search results:", error);
       parsedResults = searchResults; // Use as is if already parsed
     }
 
@@ -48,8 +49,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ overview: text });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     console.error("Error generating overview:", errorMessage);
     return NextResponse.json(
       { error: `Failed to generate overview: ${errorMessage}` },

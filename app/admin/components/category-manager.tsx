@@ -33,13 +33,44 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ categories }: CategoryManagerProps) {
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const [createState, createAction] = useFormState(createCategory, null);
-  const [updateState, updateAction] = useFormState(updateCategory, null);
-  const [deleteState, deleteAction] = useFormState(deleteCategory, null);
+  const handleCreate = async (formData: FormData) => {
+    const payload = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      slug: formData.get("slug") as string,
+      color: formData.get("color") as string,
+      icon: formData.get("icon") as string,
+    };
+    return createCategory(null, payload);
+  };
+
+  const handleUpdate = async (formData: FormData) => {
+    const payload = {
+      id: selectedCategory?.id as string,
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      slug: formData.get("slug") as string,
+      color: formData.get("color") as string,
+      icon: formData.get("icon") as string,
+    };
+    return updateCategory(null, payload);
+  };
+
+  const handleDelete = async (formData: FormData) => {
+    return deleteCategory(null, { id: selectedCategory?.id as string });
+  };
+  //@ts-ignore SOS CAMERON
+  const [createState, createAction] = useFormState(handleCreate, null);
+  //@ts-ignore SOS CAMERON
+  const [updateState, updateAction] = useFormState(handleUpdate, null);
+  //@ts-ignore SOS CAMERON
+  const [deleteState, deleteAction] = useFormState(handleDelete, null);
 
   // Handle form submission results
   if (createState?.success || updateState?.success || deleteState?.success) {
@@ -53,12 +84,12 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Categories</h2>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Category
             </Button>
           </DialogTrigger>
@@ -72,18 +103,20 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
             <form action={createAction} className="space-y-4">
               <div>
                 <Label htmlFor="name">Name</Label>
-                <Input 
-                  id="name" 
-                  name="name" 
-                  required 
+                <Input
+                  id="name"
+                  name="name"
+                  required
                   onChange={(e) => {
                     // Also update the slug field
-                    const slugInput = document.getElementById('slug') as HTMLInputElement;
+                    const slugInput = document.getElementById(
+                      "slug",
+                    ) as HTMLInputElement;
                     if (slugInput) {
                       slugInput.value = e.target.value
                         .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/(^-|-$)/g, '');
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/(^-|-$)/g, "");
                     }
                   }}
                 />
@@ -117,7 +150,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,7 +170,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                   {category.color && (
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-4 h-4 rounded"
+                        className="h-4 w-4 rounded"
                         style={{ backgroundColor: category.color }}
                       />
                       {category.color}
@@ -155,7 +188,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                         setIsEditDialogOpen(true);
                       }}
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -165,7 +198,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                         setIsDeleteDialogOpen(true);
                       }}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -180,34 +213,39 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>
-              Update the category details.
-            </DialogDescription>
+            <DialogDescription>Update the category details.</DialogDescription>
           </DialogHeader>
           <form action={updateAction} className="space-y-4">
             <input type="hidden" name="id" value={selectedCategory?.id} />
             <div>
               <Label htmlFor="edit-name">Name</Label>
-              <Input 
-                id="edit-name" 
-                name="name" 
-                defaultValue={selectedCategory?.name} 
-                required 
+              <Input
+                id="edit-name"
+                name="name"
+                defaultValue={selectedCategory?.name}
+                required
                 onChange={(e) => {
                   // Also update the slug field
-                  const slugInput = document.getElementById('edit-slug') as HTMLInputElement;
+                  const slugInput = document.getElementById(
+                    "edit-slug",
+                  ) as HTMLInputElement;
                   if (slugInput) {
                     slugInput.value = e.target.value
                       .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, '-')
-                      .replace(/(^-|-$)/g, '');
+                      .replace(/[^a-z0-9]+/g, "-")
+                      .replace(/(^-|-$)/g, "");
                   }
                 }}
               />
             </div>
             <div>
               <Label htmlFor="edit-slug">Slug</Label>
-              <Input id="edit-slug" name="slug" defaultValue={selectedCategory?.slug} required />
+              <Input
+                id="edit-slug"
+                name="slug"
+                defaultValue={selectedCategory?.slug}
+                required
+              />
             </div>
             <div>
               <Label htmlFor="edit-description">Description</Label>
@@ -249,8 +287,8 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
           <DialogHeader>
             <DialogTitle>Delete Category</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this category? This action cannot be
-              undone.
+              Are you sure you want to delete this category? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <form action={deleteAction}>

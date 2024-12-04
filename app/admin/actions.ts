@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import Exa from "exa-js";
 
-type ActionState = {
+export type ActionState = {
   success?: boolean;
   error?: string;
   message?: string;
@@ -149,7 +149,6 @@ export async function deleteCategory(
       return { error: "No category ID provided" };
     }
 
-    // @ts-expect-error Database schema type mismatch
     await db.delete(categories).where(eq(categories.id, id));
 
     revalidatePath("/admin");
@@ -330,7 +329,9 @@ type ErrorResponse = {
   status: number;
 };
 
-export async function handleError(error: Error | ErrorResponse): Promise<{ message: string }> {
+export async function handleError(
+  error: Error | ErrorResponse,
+): Promise<{ message: string }> {
   if (error instanceof Error) {
     return { message: error.message };
   } else {
@@ -493,9 +494,7 @@ export async function scrapeUrl(
   }
 }
 
-export async function generateContent(
-  url: string,
-): Promise<GeneratedContent> {
+export async function generateContent(url: string): Promise<GeneratedContent> {
   try {
     if (!url) {
       throw new Error("URL is required");

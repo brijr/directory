@@ -25,6 +25,7 @@ export function URLScraper() {
       const formData = new FormData();
       formData.append("url", url);
 
+      //@ts-ignore SOS CAMERON
       const response = await scrapeUrl(null, formData);
       if (response?.data) {
         setMetadata(response);
@@ -67,7 +68,12 @@ export function URLScraper() {
           Scrape URL
         </Button>
 
-        {metadata && <ResultDisplay metadata={metadata.data} error={metadata.error || null} />}
+        {metadata && (
+          <ResultDisplay
+            metadata={metadata.data}
+            error={metadata.error || null}
+          />
+        )}
       </form>
     </div>
   );
