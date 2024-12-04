@@ -258,7 +258,7 @@ export function BookmarkManager({
 
       const result = await generateContent(url, null);
 
-      if ('error' in result) {
+      if ("error" in result) {
         toast.error(result.error as string);
       } else {
         setFormData((prev) => ({
@@ -404,7 +404,11 @@ export function BookmarkManager({
             </SheetDescription>
           </SheetHeader>
 
-          <form id="bookmarkForm" onSubmit={handleSubmit} className="mt-6 space-y-6">
+          <form
+            id="bookmarkForm"
+            onSubmit={handleSubmit}
+            className="mt-6 space-y-6"
+          >
             <input type="hidden" name="id" value={selectedBookmark?.id || ""} />
             <input type="hidden" name="slug" value={formData.slug} />
 
@@ -426,7 +430,9 @@ export function BookmarkManager({
                       type="button"
                       variant="secondary"
                       onClick={() => {
-                        const form = document.getElementById('bookmarkForm') as HTMLFormElement;
+                        const form = document.getElementById(
+                          "bookmarkForm",
+                        ) as HTMLFormElement;
                         if (form) handleGenerateContent(form);
                       }}
                       disabled={isGenerating}

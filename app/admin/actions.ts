@@ -2,6 +2,7 @@
 
 import { db } from "@/db/client";
 import { bookmarks, categories } from "@/db/schema";
+import { generateSlug } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import Exa from "exa-js";
@@ -10,21 +11,12 @@ export interface ActionState {
   success?: boolean;
   error?: string;
   message?: string;
+  data?: any;
   progress?: {
     current: number;
     total: number;
     currentUrl?: string;
     lastAdded?: string;
-  };
-}
-
-interface ScrapeResult {
-  error: string | null;
-  data?: {
-    title: string;
-    description: string;
-    favicon: string;
-    ogImage: string;
   };
 }
 
@@ -128,13 +120,6 @@ export async function deleteCategory(
 }
 
 // Bookmark Actions
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export async function createBookmark(
   prevState: ActionState | null,
   formData: FormData,
@@ -276,71 +261,61 @@ export async function bulkUploadBookmarks(
   formData: FormData,
 ): Promise<ActionState> {
   try {
-    const file = formData.get("file") as File;
-    if (!file) {
-      return { error: "No file provided" };
+    const urls = formData.get("urls") as string;
+    if (!urls) {
+      return { error: "No URLs provided" };
     }
 
-    const text = await file.text();
-    const rows = text
-      .split("\n")
-      .map((row) => row.trim())
-      .filter((row) => row);
-
-    // Skip header row if it exists
-    const urls = rows[0].toLowerCase().includes("url") ? rows.slice(1) : rows;
-
+    const urlList = urls.split("\n").filter((url) => url.trim());
     let successCount = 0;
     let errorCount = 0;
-    let lastAddedTitle = "";
 
-    // Process URLs sequentially with delay
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i].trim();
+    for (let i = 0; i < urlList.length; i++) {
+      const url = urlList[i].trim();
       if (!url) continue;
 
       try {
-        // Add a 2-second delay between each request to avoid rate limits
-        if (i > 0) {
-          await delay(2000);
-        }
-
-        // Generate content for the URL
         const content = await generateContent(url, null);
-
-        // Create the bookmark
-        await db.insert(bookmarks).values({
-          title: content.title,
-          slug: content.slug,
-          url: url,
-          description: content.description,
-          overview: content.overview,
-          favicon: content.favicon,
-          ogImage: content.ogImage,
-          search_results: content.search_results,
-          categoryId: null,
-          isFavorite: false,
-          isArchived: false,
-        });
-
-        successCount++;
-        lastAddedTitle = content.title;
-
-        // Revalidate after each successful addition
-        revalidatePath("/admin");
-        revalidatePath("/");
-      } catch (err) {
-        console.error(`Error processing URL: ${url}`, err);
-
-        // Check if it's a rate limit error
-        if (err instanceof Error && err.message.includes("rate limit")) {
-          // Wait for 10 seconds before retrying
-          await delay(10000);
-          i--; // Retry the same URL
+        if (content.error) {
+          errorCount++;
           continue;
         }
 
+        // Ensure all required fields are strings
+        const bookmarkData = {
+          title: content.title || "",
+          description: content.description || "",
+          url: content.url || "",
+          overview: content.overview || "",
+          search_results: content.search_results || "",
+          favicon: content.favicon || "",
+          ogImage: content.ogImage || "",
+          slug: content.slug || "",
+          categoryId: null,
+          isFavorite: false,
+          isArchived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        await db.insert(bookmarks).values(bookmarkData);
+
+        successCount++;
+        revalidatePath("/admin");
+        revalidatePath("/[slug]");
+
+        // Return progress update
+        return {
+          success: true,
+          progress: {
+            current: i + 1,
+            total: urlList.length,
+            lastAdded: content.title,
+          },
+        };
+      } catch (error) {
         errorCount++;
+        console.error(`Error processing URL ${url}:`, error);
       }
     }
 
@@ -348,51 +323,87 @@ export async function bulkUploadBookmarks(
       success: true,
       message: `Successfully imported ${successCount} bookmarks. ${errorCount > 0 ? `Failed to import ${errorCount} URLs.` : ""}`,
       progress: {
-        current: urls.length,
-        total: urls.length,
-        lastAdded: lastAddedTitle,
+        current: urlList.length,
+        total: urlList.length,
       },
     };
-  } catch (err) {
-    console.error("Error bulk uploading bookmarks:", err);
-    return { error: "Failed to process bulk upload" };
+  } catch (error) {
+    console.error("Error in bulk upload:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to process bulk upload",
+    };
   }
 }
 
 // URL Scraping Action
 export async function scrapeUrl(
-  prevState: ScrapeResult | null,
+  prevState: ActionState | null,
   formData: FormData,
-): Promise<ScrapeResult> {
+): Promise<ActionState> {
   try {
     const url = formData.get("url") as string;
-    if (!url) return { error: "URL is required", data: undefined };
+    if (!url) return { error: "URL is required" };
 
-    const exa = new Exa(process.env.EXASEARCH_API_KEY as string);
+    // Get metadata from our API
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : "";
 
-    const result = await exa.getContents([url], {
-      text: true,
-      livecrawl: "fallback",
+    const metadataResponse = await fetch(
+      `${baseUrl}/api/metadata?url=${encodeURIComponent(url)}`,
+      {
+        method: "GET",
+      },
+    );
+
+    if (!metadataResponse.ok) {
+      throw new Error("Failed to fetch metadata");
+    }
+
+    const metadata = await metadataResponse.json();
+
+    // Get search results using Exa API
+    const exaResponse = await fetch("https://api.exa.ai/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.EXASEARCH_API_KEY}`,
+      },
+      body: JSON.stringify({
+        query: url,
+        num_results: 5,
+      }),
     });
 
-    console.log("Scraped metadata:", result); // Debug log
+    if (!exaResponse.ok) {
+      throw new Error("Failed to fetch search results from Exa");
+    }
 
-    // Extract metadata from the first result
-    const metadata =
-      Array.isArray(result) && result.length > 0 ? result[0] : {};
+    const searchResults = await exaResponse.json();
 
     return {
-      error: null,
+      success: true,
       data: {
         title: metadata.title || "",
         description: metadata.description || "",
         favicon: metadata.favicon || "",
-        ogImage: metadata.ogImage || metadata.image || "",
+        ogImage: metadata.ogImage || "",
+        url: metadata.url || url,
+        search_results: JSON.stringify(searchResults),
       },
     };
-  } catch (err) {
-    console.error("Error scraping URL:", err);
-    return { error: "Failed to scrape URL", data: undefined };
+  } catch (error) {
+    console.error("Error scraping URL:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to scrape URL",
+    };
   }
 }
 
@@ -406,15 +417,15 @@ export async function generateContent(url: string, _: null) {
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : "";
+        ? "http://localhost:3000"
+        : "";
 
     // First, fetch metadata from our API
     const metadataResponse = await fetch(
       `${baseUrl}/api/metadata?url=${encodeURIComponent(url)}`,
       {
         method: "GET",
-      }
+      },
     );
 
     if (!metadataResponse.ok) {
@@ -423,7 +434,35 @@ export async function generateContent(url: string, _: null) {
     }
 
     const metadata = await metadataResponse.json();
-    console.log("API metadata:", metadata); // Debug log
+    console.log("API metadata:", metadata);
+
+    // Get search results using Exa
+    const exa = new Exa(process.env.EXASEARCH_API_KEY as string);
+    const searchResults = await exa.getContents([url], {
+      text: true,
+      livecrawl: "fallback",
+    });
+
+    console.log("Exa search results:", searchResults);
+
+    // Generate overview using Claude
+    const overviewResponse = await fetch(`${baseUrl}/api/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: url,
+        searchResults: JSON.stringify(searchResults),
+      }),
+    });
+
+    if (!overviewResponse.ok) {
+      throw new Error("Failed to generate overview");
+    }
+
+    const overviewData = await overviewResponse.json();
+    console.log("Generated overview:", overviewData);
 
     // Generate a slug from the title
     const slug = generateSlug(metadata.title || "");
@@ -431,9 +470,9 @@ export async function generateContent(url: string, _: null) {
     return {
       title: metadata.title || "",
       description: metadata.description || "",
-      url: url,
-      overview: metadata.overview || "",
-      search_results: null,
+      url: metadata.url || url,
+      overview: overviewData.overview || "",
+      search_results: JSON.stringify(searchResults),
       favicon: metadata.favicon || "",
       ogImage: metadata.ogImage || "",
       slug: slug,
@@ -441,7 +480,8 @@ export async function generateContent(url: string, _: null) {
   } catch (error) {
     console.error("Error generating content:", error);
     return {
-      error: error instanceof Error ? error.message : "Failed to generate content",
+      error:
+        error instanceof Error ? error.message : "Failed to generate content",
     };
   }
 }

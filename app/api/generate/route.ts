@@ -9,17 +9,31 @@ export async function POST(request: Request) {
     if (!url || !searchResults) {
       return NextResponse.json(
         { error: "URL and search results are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const prompt = `You are a helpful assistant that writes clear, concise summaries of web content. 
-    Based on the search results below, write a brief overview of the webpage at ${url}. 
-    Format the response in markdown, focusing on the key points and main value of the content.
-    Keep it under 200 words and make it engaging.
+    // Parse and format search results for better context
+    let parsedResults;
+    try {
+      parsedResults = JSON.parse(searchResults);
+    } catch (e) {
+      parsedResults = searchResults; // Use as is if already parsed
+    }
 
-    Search Results:
-    ${searchResults}`;
+    const prompt = `You are a helpful assistant that writes clear, concise summaries of web content.
+    Based on the search results and content from ${url}, write a brief but comprehensive overview.
+
+    Focus on:
+    - The main purpose or value proposition
+    - Key features or main points
+    - Target audience or use cases
+    - What makes it unique or noteworthy
+
+    Format the response in markdown and keep it under 200 words. Make it engaging and informative.
+
+    Context from the webpage:
+    ${JSON.stringify(parsedResults, null, 2)}`;
 
     const { text } = await generateText({
       model: anthropic("claude-3-haiku-20240307"),
@@ -29,6 +43,8 @@ export async function POST(request: Request) {
           content: prompt,
         },
       ],
+      temperature: 0.7,
+      max_tokens: 500,
     });
 
     return NextResponse.json({ overview: text });
@@ -36,7 +52,7 @@ export async function POST(request: Request) {
     console.error("Error generating overview:", error);
     return NextResponse.json(
       { error: "Failed to generate overview" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
