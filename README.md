@@ -1,5 +1,8 @@
 # 9d8/directory
 
+![Uploading CleanShot 2024-12-04 at 16.52.10@2x.jpg…]()
+
+
 A modern, AI-powered Next.js directory template for creating beautiful resource collections and bookmarks. Perfect for creating your own curated list of resources, bookmarks, or link directories. View the live demo at [directory.9d8.dev](https://directory.9d8.dev).
 
 ## Overview
