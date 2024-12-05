@@ -23,7 +23,6 @@ export default function AdminLogin() {
 
     setError("");
     setLoading(true);
-    console.log('Attempting login...');
 
     try {
       const response = await fetch("/api/admin/login", {
@@ -32,21 +31,13 @@ export default function AdminLogin() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ password: password.trim() }),
-        credentials: "include", // Important for handling cookies
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok && data.success) {
-        console.log('Login successful, redirecting...');
-        // Add a small delay before redirecting
-        await new Promise((resolve) => setTimeout(resolve, 500));
         router.push("/admin");
-        router.refresh();
       } else {
-        console.log('Login failed:', data.error);
         setError(data.error || "Invalid password. Please try again.");
       }
     } catch (error) {
@@ -97,7 +88,7 @@ export default function AdminLogin() {
                   if (error) setError("");
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     handleSubmit(e);
                   }
