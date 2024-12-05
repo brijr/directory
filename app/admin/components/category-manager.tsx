@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useFormState } from "react-dom";
-import { createCategory, updateCategory, deleteCategory } from "../actions";
+import {
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  ActionState,
+} from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +44,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const handleCreate = async (formData: FormData) => {
+  const handleCreate = async (_: ActionState | null, formData: FormData) => {
     const payload = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
@@ -50,7 +55,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     return createCategory(null, payload);
   };
 
-  const handleUpdate = async (formData: FormData) => {
+  const handleUpdate = async (_: ActionState | null, formData: FormData) => {
     const payload = {
       id: selectedCategory?.id as string,
       name: formData.get("name") as string,
@@ -62,14 +67,12 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     return updateCategory(null, payload);
   };
 
-  const handleDelete = async (formData: FormData) => {
-    return deleteCategory(null, { id: selectedCategory?.id as string });
+  const handleDelete = async (_: ActionState | null, formData: FormData) => {
+    return deleteCategory(null, { id: formData.get("id") as string });
   };
-  //@ts-ignore SOS CAMERON
+
   const [createState, createAction] = useFormState(handleCreate, null);
-  //@ts-ignore SOS CAMERON
   const [updateState, updateAction] = useFormState(handleUpdate, null);
-  //@ts-ignore SOS CAMERON
   const [deleteState, deleteAction] = useFormState(handleDelete, null);
 
   // Handle form submission results

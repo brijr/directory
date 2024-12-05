@@ -54,7 +54,7 @@ interface Category {
 }
 
 interface Bookmark {
-  id: string;
+  id: number;
   title: string;
   slug: string;
   url: string;
@@ -253,7 +253,7 @@ export function BookmarkManager({
     try {
       const deleteData = {
         id: bookmark.id.toString(),
-        url: bookmark.url
+        url: bookmark.url,
       };
       const result = await deleteBookmark(null, deleteData);
 
@@ -330,7 +330,7 @@ export function BookmarkManager({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const file = formData.get("file") as File;
-    
+
     if (!file) {
       toast.error("Please select a file to upload");
       return;
@@ -340,8 +340,8 @@ export function BookmarkManager({
       const text = await file.text();
       const urls = text
         .split("\n")
-        .map(url => url.trim())
-        .filter(url => url && !url.toLowerCase().startsWith("url")); // Skip header if present
+        .map((url) => url.trim())
+        .filter((url) => url && !url.toLowerCase().startsWith("url")); // Skip header if present
 
       const result = await bulkUploadBookmarks(null, { urls: urls.join("\n") });
 
