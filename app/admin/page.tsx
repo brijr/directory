@@ -6,6 +6,7 @@ import { CategoryManager } from "./components/category-manager";
 import { BookmarkManager } from "./components/bookmark-manager";
 import { Section, Container } from "@/components/craft";
 import { Bookmark, FolderKanban, Settings2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminPage() {
   const categories = await getAllCategories();
@@ -64,12 +65,23 @@ export default async function AdminPage() {
                   Categories
                 </TabsTrigger>
               </TabsList>
-              <Card className="flex items-center gap-2 p-2">
-                <Settings2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Admin Controls
-                </span>
-              </Card>
+              <div className="flex items-center gap-2">
+                <Card className="flex items-center gap-2 p-2">
+                  <Settings2 className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Admin Controls
+                  </span>
+                </Card>
+                <form action="/api/admin/logout">
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="rounded-xl text-muted-foreground"
+                  >
+                    Sign Out
+                  </Button>
+                </form>
+              </div>
             </div>
 
             <TabsContent value="bookmarks" className="space-y-4">
