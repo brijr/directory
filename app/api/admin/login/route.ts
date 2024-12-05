@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
+import * as jose from "jose";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
     const adminPassword = process.env.ADMIN_PASSWORD;
+    const jwtSecret = process.env.JWT_SECRET;
 
-    console.log('Attempting login...');
-    console.log('Admin password from env:', adminPassword);
-
-    if (!adminPassword) {
-      console.error("ADMIN_PASSWORD not set in environment variables");
+    if (!adminPassword || !jwtSecret) {
+      console.error("Missing required environment variables");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 },
@@ -20,54 +19,50 @@ export async function POST(request: Request) {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (password === adminPassword) {
-      console.log('Password match successful');
-      const cookieExpiry = 60 * 60 * 24; // 24 hours
+      const secret = new TextEncoder().encode(jwtSecret);
+      const token = await new jose.SignJWT({
+        role: "admin",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("24h")
+        .sign(secret);
 
-      const cookieStore = cookies();
-      cookieStore.set("admin_authenticated", "true", {
+      cookies().set("admin-token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: cookieExpiry,
+        sameSite: "strict",
         path: "/",
       });
 
-      console.log('Cookie set successfully');
-
-      return new NextResponse(
-        JSON.stringify({
+      return NextResponse.json(
+        {
           success: true,
-          message: "Authentication successful"
-        }),
+          message: "Authentication successful",
+          token: token,
+        },
         {
           status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+        },
       );
     }
 
-    console.log('Password match failed');
-    return new NextResponse(
-      JSON.stringify({ error: "Invalid password" }),
+    console.log("Password match failed");
+    return NextResponse.json(
+      { error: "Invalid password" },
       {
         status: 401,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      },
     );
   } catch (error) {
     console.error("Login error:", error);
-    return new NextResponse(
-      JSON.stringify({ error: "An error occurred during login. Please try again." }),
+    return NextResponse.json(
+      {
+        error: "An error occurred during login. Please try again.",
+      },
       {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      },
     );
   }
 }
