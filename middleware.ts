@@ -1,33 +1,39 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
-  // Only protect /admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Skip middleware for login route and API routes
-    if (request.nextUrl.pathname === '/admin/login' ||
-        request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.next();
-    }
+export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const token = request.cookies.get("admin-token")?.value;
+    const isAuthenticated = !!token;
+    const isLoginPage = request.nextUrl.pathname === "/admin/login";
 
-    // Check if user is authenticated
-    const isAuthenticated = request.cookies.get('admin_authenticated')?.value === 'true';
-
+    // Handle unauthenticated users
     if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to login...');
-      const loginUrl = new URL('/admin/login', request.url);
-      return NextResponse.redirect(loginUrl);
+      if (isLoginPage) return NextResponse.next();
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
-    console.log('User authenticated, allowing access...');
+    // Verify token
+    try {
+      await jwtVerify(
+        token!,
+        new TextEncoder().encode(process.env.JWT_SECRET!),
+      );
+
+      if (isLoginPage) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      return NextResponse.next();
+    } catch (error) {
+      if (isLoginPage) return NextResponse.next();
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
-// Configure which routes to run middleware on
 export const config = {
-  matcher: [
-    '/admin/:path*',
-  ],
+  matcher: "/admin/:path*",
 };
